@@ -865,6 +865,10 @@
       });
     });
 
+    // Devotion Counter Reset Handlers
+    document.getElementById('btn-reset-counter')?.addEventListener('click', resetDevotionCounters);
+    document.getElementById('btn-journal-clear')?.addEventListener('click', resetDevotionCounters);
+
     // Escape Key to close modals or exit zen mode
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
@@ -875,6 +879,30 @@
         }
       }
     });
+  }
+
+  // --- RESET DEVOTION COUNTERS & HISTORY ---
+  function resetDevotionCounters() {
+    const confirmReset = window.confirm(
+      'Are you sure you want to reset your devotion streak, completed session count, and prayer journal history?'
+    );
+    if (!confirmReset) return;
+
+    state.user.streak = 0;
+    state.user.history = [];
+    state.user.lastActiveDate = null;
+    savePersistedState();
+    updateStatsDisplay();
+
+    if (document.getElementById('modal-journal')?.classList.contains('active')) {
+      openJournalModal();
+    }
+
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--rubric-crimson); color:#fff; padding:10px 20px; border-radius:20px; font-family:var(--font-serif); font-size:0.95rem; z-index:9999; box-shadow:var(--shadow-md); border:1px solid var(--border-gold);';
+    toast.textContent = '✠ Devotion counters and journal history have been reset.';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3500);
   }
 
   // --- BOOTSTRAP ---

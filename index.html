@@ -512,6 +512,12 @@
           </div>
         </div>
 
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
+          <button class="btn btn-outline btn-small" id="btn-journal-clear" style="font-size: 0.8rem; color: var(--rubric-crimson); border-color: var(--border-color);">
+            ↺ Reset History & Streak
+          </button>
+        </div>
+
         <div class="journal-entries-list" id="journal-entries-list">
           <!-- Injected via JS -->
         </div>
@@ -579,6 +585,17 @@
             <button class="pill-btn" data-size="large">Large</button>
             <button class="pill-btn" data-size="xlarge">Extra Large</button>
           </div>
+        </div>
+
+        <!-- Devotion Counter & Data Reset -->
+        <div class="setting-group" style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+          <label class="setting-label">Devotion Counter & History</label>
+          <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 12px;">
+            Reset your streak, completed devotions count, total prayer minutes, and journal logs.
+          </p>
+          <button class="btn btn-outline btn-small" id="btn-reset-counter" style="color: var(--rubric-crimson); border-color: var(--border-color);">
+            ↺ Reset Devotion Counter & Data
+          </button>
         </div>
 
       </div>
