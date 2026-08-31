@@ -1,0 +1,33 @@
+# Daily Devotion & Meditation App Specification
+
+## 1. Overview & Core Intent
+A lightweight, distraction-free daily mental prayer web application designed for a 15–20 minute private devotion. The application presents a welcome interface with the current date, allows the user to select one of three spiritual books (or random assignment), and wraps the meditation reading in traditional Catholic preparatory and concluding prayers.
+
+---
+
+## 2. Source Material
+1. **Source 1:** *My Daily Bread* — Fr. Anthony J. Paone, S.J.
+2. **Source 2:** *The Imitation of Christ* — Thomas à Kempis
+3. **Source 3:** *The Joy of Knowing Christ*
+
+---
+
+## 3. Architecture & File Structure
+
+```text
+daily-meditation-app/
+├── data/
+│   └── meditations.json           # Parsed JSON dataset containing all meditation units
+├── epubs/                         # Source EPUB files
+│   ├── My_Daily_Bread.epub
+│   ├── The_Imitation_of_Christ.epub
+│   └── The_Joy_of_Knowing_Christ.epub
+├── scripts/
+│   ├── extract_epubs.py           # Ingestion script to parse EPUBs into JSON
+│   └── requirements.txt           # ebooklib, beautifulsoup4
+├── assets/
+│   └── audio/
+│       └── bell.mp3               # Gentle chime for timer completion
+├── index.html                     # Main Single-Page Application
+├── styles.css                     # Monastic / Parchment liturgical styling
+└── app.js                         # Application logic, timer, and state management

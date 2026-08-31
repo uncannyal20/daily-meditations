@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="parchment">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Devotion & Mental Prayer</title>
+  <meta name="description" content="Distraction-free daily Catholic mental prayer and spiritual reading application.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Playfair+Display:ital,wght@0,500;0,600;1,400;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Top App Navigation -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand" id="btn-home">
+        <span class="brand-cross">✠</span>
+        <div class="brand-text">
+          <span class="brand-title">Devotio Diurna</span>
+          <span class="brand-sub">Daily Mental Prayer & Reading</span>
+        </div>
+      </div>
+
+      <div class="header-date" id="current-date-display">
+        <!-- Injected via JS -->
+      </div>
+
+      <div class="header-actions">
+        <button class="icon-btn" id="btn-open-library" title="Spiritual Library & Chapters" aria-label="Library">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          <span class="btn-label">Library</span>
+        </button>
+        <button class="icon-btn" id="btn-open-journal" title="Spiritual Journal & Resolutions" aria-label="Journal">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+          <span class="btn-label">Journal</span>
+        </button>
+        <button class="icon-btn" id="btn-open-settings" title="Prayer Settings" aria-label="Settings">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+        <button class="icon-btn theme-toggle-btn" id="btn-toggle-theme" title="Toggle Dark Cloister Theme" aria-label="Toggle Theme">
+          <span class="theme-icon-sun">☼</span>
+          <span class="theme-icon-moon">☽</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Prayer App Container -->
+  <main class="app-main" id="app-main">
+
+    <!-- ============================================== -->
+    <!-- SCREEN 1: WELCOME & SELECTION                  -->
+    <!-- ============================================== -->
+    <section class="screen active" id="screen-welcome">
+      <div class="content-wrapper welcome-view">
+
+        <!-- Invocation Header Banner -->
+        <div class="monastic-hero">
+          <div class="fleuron-ornament">❧ ✠ ☙</div>
+          <h1 class="hero-title">Daily Mental Prayer</h1>
+          <p class="hero-subtitle">"Draw near to God, and He will draw near to you."</p>
+          <div class="liturgical-badge" id="welcome-date-badge"></div>
+        </div>
+
+        <!-- Today's Suggested Meditation Hero -->
+        <div class="card daily-hero-card" id="daily-assigned-card">
+          <div class="card-ornament-corner top-left"></div>
+          <div class="card-ornament-corner top-right"></div>
+          <div class="daily-hero-badge">Today's Assigned Meditation</div>
+          <div class="daily-hero-book" id="daily-hero-book-title">My Daily Bread</div>
+          <h2 class="daily-hero-title" id="daily-hero-chapter-title">Man's Purpose on Earth</h2>
+          <p class="daily-hero-meta" id="daily-hero-meta">Book One: The Way of Purification · Part One: Conversion</p>
+          <p class="daily-hero-excerpt" id="daily-hero-excerpt">
+            "MY CHILD, the highest goal of your life is union with Me in Heaven. Let your intentions throughout the day be guided by this truth..."
+          </p>
+          <div class="daily-hero-actions">
+            <button class="btn btn-primary" id="btn-start-daily">
+              <span class="btn-cross">✠</span> Begin Today's Devotion (15–20 min)
+            </button>
+            <button class="btn btn-secondary" id="btn-random-meditation">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"></path></svg> Random Meditation
+            </button>
+          </div>
+        </div>
+
+        <!-- Spiritual Library Cards -->
+        <div class="section-heading">
+          <span class="heading-line"></span>
+          <span class="heading-title">Spiritual Classics</span>
+          <span class="heading-line"></span>
+        </div>
+
+        <div class="books-grid">
+          <!-- Book 1: My Daily Bread -->
+          <div class="card book-card" data-book-id="my_daily_bread">
+            <div class="book-header">
+              <span class="book-number">I</span>
+              <div class="book-badge">196 Meditations</div>
+            </div>
+            <h3 class="book-title">My Daily Bread</h3>
+            <div class="book-author">Fr. Anthony J. Paone, S.J.</div>
+            <p class="book-desc">
+              Structured daily spiritual reading divided into three traditional stages: Purification, Imitation, and Union. Each reflection contains Christ Speaks, Think, and Pray.
+            </p>
+            <div class="book-footer">
+              <button class="btn btn-outline btn-select-book" data-book-id="my_daily_bread">Choose Chapter</button>
+              <button class="btn btn-primary btn-quick-book" data-book-id="my_daily_bread" title="Start Current Chapter">Pray Now</button>
+            </div>
+          </div>
+
+          <!-- Book 2: The Imitation of Christ -->
+          <div class="card book-card" data-book-id="the_imitation_of_christ">
+            <div class="book-header">
+              <span class="book-number">II</span>
+              <div class="book-badge">114 Chapters</div>
+            </div>
+            <h3 class="book-title">The Imitation of Christ</h3>
+            <div class="book-author">Thomas à Kempis</div>
+            <p class="book-desc">
+              One of the most revered spiritual masterworks in Christendom on humility, inner peace, withdrawal from vanity, and total devotion to the Holy Sacrament.
+            </p>
+            <div class="book-footer">
+              <button class="btn btn-outline btn-select-book" data-book-id="the_imitation_of_christ">Choose Chapter</button>
+              <button class="btn btn-primary btn-quick-book" data-book-id="the_imitation_of_christ" title="Start Current Chapter">Pray Now</button>
+            </div>
+          </div>
+
+          <!-- Book 3: The Joy of Knowing Christ -->
+          <div class="card book-card" data-book-id="the_joy_of_knowing_christ">
+            <div class="book-header">
+              <span class="book-number">III</span>
+              <div class="book-badge">55 Meditations</div>
+            </div>
+            <h3 class="book-title">The Joy of Knowing Christ</h3>
+            <div class="book-author">Pope Benedict XVI</div>
+            <p class="book-desc">
+              Profound theological and contemplative meditations on the Gospels, drawing the soul into the encounter with Jesus Christ through sacred Scripture.
+            </p>
+            <div class="book-footer">
+              <button class="btn btn-outline btn-select-book" data-book-id="the_joy_of_knowing_christ">Choose Chapter</button>
+              <button class="btn btn-primary btn-quick-book" data-book-id="the_joy_of_knowing_christ" title="Start Current Chapter">Pray Now</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Devotion Tracker Card -->
+        <div class="card stats-card">
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-number" id="stat-streak">0</div>
+              <div class="stat-label">Day Streak</div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <div class="stat-number" id="stat-completed">0</div>
+              <div class="stat-label">Devotions Completed</div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <div class="stat-number" id="stat-minutes">0m</div>
+              <div class="stat-label">Total Mental Prayer Time</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SCREEN 2: STEP 1 - PREPARATORY PRAYERS         -->
+    <!-- ============================================== -->
+    <section class="screen" id="screen-preparation">
+      <div class="content-wrapper prayer-flow-view">
+
+        <!-- Flow Progress Bar -->
+        <div class="prayer-step-header">
+          <div class="step-pill active"><span class="step-num">1</span> Preparation</div>
+          <div class="step-line"></div>
+          <div class="step-pill"><span class="step-num">2</span> Meditation</div>
+          <div class="step-line"></div>
+          <div class="step-pill"><span class="step-num">3</span> Thanksgiving</div>
+        </div>
+
+        <div class="monastic-card prayer-card">
+          <div class="card-ornament-corner top-left"></div>
+          <div class="card-ornament-corner top-right"></div>
+          
+          <div class="prayer-heading">
+            <div class="fleuron">❧ ✠ ☙</div>
+            <h2 class="prayer-title">Preparatory Prayers</h2>
+            <div class="prayer-caption">Place yourself reverently in the holy presence of God.</div>
+          </div>
+
+          <div class="prayer-body">
+            
+            <!-- Prayer 1: Presence of God -->
+            <div class="prayer-section">
+              <h4 class="prayer-subheading">I. Act of Faith in the Presence of God</h4>
+              <p class="prayer-text">
+                <span class="drop-cap">O</span> my God, I firmly believe that You are here present, and that You see me. I adore Your divine Majesty with the deepest humility. I acknowledge that I am unworthy to appear before You, but trusting in Your infinite mercy and goodness, I come to converse with You in holy prayer.
+              </p>
+            </div>
+
+            <!-- Prayer 2: Holy Spirit -->
+            <div class="prayer-section">
+              <h4 class="prayer-subheading">II. Invocation of the Holy Spirit (Veni Sancte Spiritus)</h4>
+              <p class="prayer-text">
+                Come, Holy Spirit, fill the hearts of Your faithful, and enkindle in them the fire of Your love.
+              </p>
+              <p class="prayer-versicle">
+                <span class="versicle-v">℣.</span> Send forth Your Spirit and they shall be created.<br>
+                <span class="versicle-r">℟.</span> And You shall renew the face of the earth.
+              </p>
+              <p class="prayer-text">
+                <em>Let us pray:</em> O God, who by the light of the Holy Spirit did instruct the hearts of the faithful, grant that by the same Holy Spirit we may be truly wise and ever enjoy His divine consolations. Through Christ our Lord. <strong>Amen.</strong>
+              </p>
+            </div>
+
+            <!-- Prayer 3: Ignatius / Alphonsus Oblation -->
+            <div class="prayer-section">
+              <h4 class="prayer-subheading">III. Prayer for Divine Light & Grace</h4>
+              <p class="prayer-text">
+                Lord Jesus, enlighten my understanding and inflame my will, that I may receive Your holy truth, repent of my sins, and love You with my whole heart. Grant that all my thoughts, words, and actions may be directed solely to Your honor and glory.
+              </p>
+              <p class="prayer-text">
+                <em>Holy Mary, Mother of God and Seat of Wisdom, my holy Guardian Angel, and Saint Joseph, intercede for me.</em>
+              </p>
+            </div>
+
+            <!-- Silent centering -->
+            <div class="silence-prompt">
+              <div class="silence-icon">🕊</div>
+              <div class="silence-text">
+                <strong>Pause in Silence:</strong> Take a deep, steady breath. Quiet all worldly thoughts, anxieties, and distractions. When you are ready, enter your meditation.
+              </div>
+            </div>
+
+          </div>
+
+          <div class="prayer-actions">
+            <button class="btn btn-outline" id="btn-back-to-welcome">← Back</button>
+            <button class="btn btn-primary btn-large" id="btn-start-meditation-reading">
+              Begin Mental Prayer & Reading (<span id="prep-timer-label">15m</span>) ✠
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SCREEN 3: STEP 2 - READING & MENTAL PRAYER     -->
+    <!-- ============================================== -->
+    <section class="screen" id="screen-reading">
+      
+      <!-- Sticky / Floating Meditation Bar -->
+      <div class="meditation-hud" id="meditation-hud">
+        <div class="hud-container">
+          
+          <div class="hud-left">
+            <div class="hud-book-badge" id="hud-book-badge">My Daily Bread</div>
+            <div class="hud-chapter-badge" id="hud-chapter-badge">Chapter 1</div>
+          </div>
+
+          <!-- Timer Widget -->
+          <div class="hud-timer-widget">
+            <button class="timer-btn" id="btn-timer-toggle" title="Pause / Resume Timer">
+              <span id="timer-icon">⏸</span>
+            </button>
+            <div class="timer-display-group">
+              <div class="timer-countdown" id="timer-countdown">15:00</div>
+              <div class="timer-progress-bar">
+                <div class="timer-progress-fill" id="timer-progress-fill"></div>
+              </div>
+            </div>
+            <button class="timer-btn-subtle" id="btn-add-time" title="Add 5 Minutes">+5m</button>
+          </div>
+
+          <div class="hud-right">
+            <button class="hud-btn" id="btn-toggle-bookmark" title="Bookmark this meditation">
+              <span id="bookmark-icon">☆</span>
+            </button>
+            <button class="hud-btn" id="btn-font-smaller" title="Decrease font size">A-</button>
+            <button class="hud-btn" id="btn-font-larger" title="Increase font size">A+</button>
+            <button class="hud-btn" id="btn-zen-mode" title="Toggle Fullscreen Zen Mode">⛶</button>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="content-wrapper reading-view">
+
+        <!-- Progress Steps -->
+        <div class="prayer-step-header">
+          <div class="step-pill completed">✓ Preparation</div>
+          <div class="step-line"></div>
+          <div class="step-pill active"><span class="step-num">2</span> Meditation & Contemplation</div>
+          <div class="step-line"></div>
+          <div class="step-pill"><span class="step-num">3</span> Thanksgiving</div>
+        </div>
+
+        <!-- Liturgical Reading Scroll Container -->
+        <article class="monastic-parchment-sheet" id="reading-sheet">
+          <div class="sheet-border-inner">
+            
+            <header class="reading-header">
+              <div class="reading-fleuron">❧ ✠ ☙</div>
+              <div class="reading-division" id="reading-division">Book One: The Way of Purification</div>
+              <div class="reading-section" id="reading-section">Part One: Conversion</div>
+              <div class="reading-chapter-label" id="reading-chapter-label">Chapter 1</div>
+              <h1 class="reading-title" id="reading-title">Man's Purpose on Earth</h1>
+              <div class="reading-scripture" id="reading-scripture" style="display: none;"></div>
+              <div class="reading-divider">✻ ✻ ✻</div>
+            </header>
+
+            <!-- Dynamic Body Content -->
+            <div class="reading-body" id="reading-body">
+              <!-- Injected dynamically based on book structure -->
+            </div>
+
+            <!-- Meditation Advice / Prompt -->
+            <div class="contemplation-prompt">
+              <div class="prompt-icon">†</div>
+              <div class="prompt-text">
+                <strong>Mental Prayer:</strong> Do not rush. Ruminate slowly on these words. Speak heart-to-heart with Christ as a friend speaks to a friend. When your mind wanders, gently bring it back to God's presence.
+              </div>
+            </div>
+
+            <div class="reading-actions">
+              <button class="btn btn-outline" id="btn-prev-chapter" title="Previous Meditation">← Previous</button>
+              <button class="btn btn-primary btn-large" id="btn-proceed-concluding">
+                Proceed to Thanksgiving & Resolution ✠
+              </button>
+              <button class="btn btn-outline" id="btn-next-chapter" title="Next Meditation">Next →</button>
+            </div>
+
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SCREEN 4: STEP 3 - CONCLUDING PRAYERS          -->
+    <!-- ============================================== -->
+    <section class="screen" id="screen-concluding">
+      <div class="content-wrapper prayer-flow-view">
+
+        <!-- Progress Steps -->
+        <div class="prayer-step-header">
+          <div class="step-pill completed">✓ Preparation</div>
+          <div class="step-line"></div>
+          <div class="step-pill completed">✓ Meditation</div>
+          <div class="step-line"></div>
+          <div class="step-pill active"><span class="step-num">3</span> Thanksgiving & Resolution</div>
+        </div>
+
+        <div class="monastic-card prayer-card">
+          <div class="card-ornament-corner top-left"></div>
+          <div class="card-ornament-corner top-right"></div>
+
+          <div class="prayer-heading">
+            <div class="fleuron">❧ ✠ ☙</div>
+            <h2 class="prayer-title">Concluding Prayers & Resolution</h2>
+            <div class="prayer-caption">Offer thanksgiving for God's inspirations and formulate a practical resolution.</div>
+          </div>
+
+          <div class="prayer-body">
+
+            <!-- Act of Thanksgiving -->
+            <div class="prayer-section">
+              <h4 class="prayer-subheading">I. Act of Thanksgiving</h4>
+              <p class="prayer-text">
+                <span class="drop-cap">I</span> give You thanks, my God, for the holy lights, affections, and inspirations which You have communicated to me in this meditation. I humbly ask Your pardon for my distractions and lack of fervor.
+              </p>
+            </div>
+
+            <!-- Practical Daily Resolution -->
+            <div class="prayer-section resolution-box">
+              <h4 class="prayer-subheading">II. Daily Spiritual Resolution</h4>
+              <p class="resolution-helper">
+                St. Francis de Sales advises making one concrete, practical resolution to practice today (e.g. overcoming a specific irritation, showing extra patience, praying at noon):
+              </p>
+              <textarea class="resolution-input" id="resolution-textarea" placeholder="Write your practical resolution for today (e.g. 'I will practice patient silence when provoked today...')" rows="3"></textarea>
+            </div>
+
+            <!-- Oblation & Anima Christi -->
+            <div class="prayer-section">
+              <h4 class="prayer-subheading">III. Suscipe (Offering of Self)</h4>
+              <p class="prayer-text">
+                Take, Lord, and receive all my liberty, my memory, my understanding, and my entire will. All that I have and call my own You have given to me; to You, Lord, I return it. Everything is Yours; do with it what You will. Give me only Your love and Your grace, for that is enough for me.
+              </p>
+            </div>
+
+            <!-- Traditional Prayers Accordion -->
+            <details class="prayer-accordion">
+              <summary class="accordion-header">
+                <span>Traditional Concluding Prayers (Anima Christi, Pater, Ave, Gloria)</span>
+                <span class="accordion-arrow">▼</span>
+              </summary>
+              <div class="accordion-content">
+                <p class="prayer-text">
+                  <strong>Anima Christi:</strong> Soul of Christ, sanctify me. Body of Christ, save me. Blood of Christ, inebriate me. Water from the side of Christ, wash me. Passion of Christ, strengthen me. O good Jesus, hear me. Within Your wounds hide me. Permit me not to be separated from You. From the malicious enemy defend me. In the hour of my death call me, and bid me come unto You, that with Your saints I may praise You forever and ever. Amen.
+                </p>
+                <p class="prayer-text">
+                  <strong>Pater Noster:</strong> Our Father, who art in heaven, hallowed be Thy name; Thy kingdom come; Thy will be done on earth as it is in heaven. Give us this day our daily bread; and forgive us our trespasses as we forgive those who trespass against us; and lead us not into temptation, but deliver us from evil. Amen.
+                </p>
+                <p class="prayer-text">
+                  <strong>Ave Maria:</strong> Hail Mary, full of grace, the Lord is with thee; blessed art thou among women, and blessed is the fruit of thy womb, Jesus. Holy Mary, Mother of God, pray for us sinners, now and at the hour of our death. Amen.
+                </p>
+              </div>
+            </details>
+
+          </div>
+
+          <div class="prayer-actions">
+            <button class="btn btn-outline" id="btn-back-to-reading">← Return to Reading</button>
+            <button class="btn btn-primary btn-large" id="btn-complete-session">
+              Complete Devotion (Deo Gratias) ✠
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SCREEN 5: SESSION COMPLETE                     -->
+    <!-- ============================================== -->
+    <section class="screen" id="screen-complete">
+      <div class="content-wrapper complete-view">
+
+        <div class="monastic-card complete-card">
+          <div class="card-ornament-corner top-left"></div>
+          <div class="card-ornament-corner top-right"></div>
+
+          <div class="complete-crest">✠</div>
+          <h1 class="complete-title">Deo Gratias</h1>
+          <p class="complete-subtitle">"Blessed are they who hear the word of God and keep it."</p>
+
+          <div class="complete-summary">
+            <div class="summary-row">
+              <span class="summary-label">Spiritual Reading:</span>
+              <span class="summary-value" id="complete-book-chapter">My Daily Bread — Chapter 1</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Time Spent in Prayer:</span>
+              <span class="summary-value" id="complete-time-spent">15 minutes</span>
+            </div>
+            <div class="summary-row" id="complete-resolution-row" style="display:none;">
+              <span class="summary-label">Today's Resolution:</span>
+              <span class="summary-value italic" id="complete-resolution-text"></span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Current Devotion Streak:</span>
+              <span class="summary-value highlight" id="complete-streak-text">1 Day</span>
+            </div>
+          </div>
+
+          <div class="complete-actions">
+            <button class="btn btn-primary" id="btn-return-home">Return to Home</button>
+            <button class="btn btn-outline" id="btn-view-journal-entry">View in Spiritual Journal</button>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================== -->
+  <!-- MODAL 1: CHAPTER BROWSER / SPIRITUAL LIBRARY   -->
+  <!-- ============================================== -->
+  <div class="modal-overlay" id="modal-library">
+    <div class="modal-container library-modal">
+      <header class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon">📖</span>
+          <h3 class="modal-title">Spiritual Library & Index</h3>
+        </div>
+        <button class="modal-close-btn" id="btn-close-library" aria-label="Close">✕</button>
+      </header>
+
+      <div class="modal-body">
+        <!-- Search & Filter Controls -->
+        <div class="library-controls">
+          <div class="search-box">
+            <input type="text" id="library-search-input" placeholder="Search chapters, topics, titles..." autocomplete="off">
+            <span class="search-icon">🔍</span>
+          </div>
+          <div class="book-tabs" id="library-book-tabs">
+            <button class="tab-btn active" data-book="all">All Books</button>
+            <button class="tab-btn" data-book="my_daily_bread">My Daily Bread (196)</button>
+            <button class="tab-btn" data-book="the_imitation_of_christ">Imitation of Christ (114)</button>
+            <button class="tab-btn" data-book="the_joy_of_knowing_christ">Joy of Knowing Christ (55)</button>
+            <button class="tab-btn" data-book="bookmarks">★ Bookmarks</button>
+          </div>
+        </div>
+
+        <!-- Chapters List -->
+        <div class="chapters-container" id="library-chapters-list">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL 2: SPIRITUAL JOURNAL & RESOLUTIONS       -->
+  <!-- ============================================== -->
+  <div class="modal-overlay" id="modal-journal">
+    <div class="modal-container journal-modal">
+      <header class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon">✒</span>
+          <h3 class="modal-title">Spiritual Journal & Resolutions</h3>
+        </div>
+        <button class="modal-close-btn" id="btn-close-journal" aria-label="Close">✕</button>
+      </header>
+
+      <div class="modal-body">
+        <div class="journal-stats">
+          <div class="journal-stat-item">
+            <span class="stat-num" id="journal-total-entries">0</span>
+            <span class="stat-lbl">Sessions Recorded</span>
+          </div>
+          <div class="journal-stat-item">
+            <span class="stat-num" id="journal-total-minutes">0m</span>
+            <span class="stat-lbl">Total Prayer Time</span>
+          </div>
+          <div class="journal-stat-item">
+            <span class="stat-num" id="journal-current-streak">0</span>
+            <span class="stat-lbl">Active Streak</span>
+          </div>
+        </div>
+
+        <div class="journal-entries-list" id="journal-entries-list">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL 3: PRAYER SETTINGS                       -->
+  <!-- ============================================== -->
+  <div class="modal-overlay" id="modal-settings">
+    <div class="modal-container settings-modal">
+      <header class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon">⚙</span>
+          <h3 class="modal-title">Devotion Settings</h3>
+        </div>
+        <button class="modal-close-btn" id="btn-close-settings" aria-label="Close">✕</button>
+      </header>
+
+      <div class="modal-body">
+        
+        <!-- Timer Duration -->
+        <div class="setting-group">
+          <label class="setting-label">Default Mental Prayer Duration</label>
+          <div class="setting-options duration-options" id="setting-duration-group">
+            <button class="pill-btn" data-minutes="5">5 min</button>
+            <button class="pill-btn" data-minutes="10">10 min</button>
+            <button class="pill-btn active" data-minutes="15">15 min</button>
+            <button class="pill-btn" data-minutes="20">20 min</button>
+            <button class="pill-btn" data-minutes="30">30 min</button>
+          </div>
+        </div>
+
+        <!-- Chime Sound -->
+        <div class="setting-group">
+          <label class="setting-label">Completion Bell Chime</label>
+          <div class="setting-options" id="setting-chime-group">
+            <button class="pill-btn active" data-sound="monastery">Monastery Bell</button>
+            <button class="pill-btn" data-sound="singing_bowl">Singing Bowl</button>
+            <button class="pill-btn" data-sound="soft">Soft Chime</button>
+            <button class="pill-btn" data-sound="mute">Muted</button>
+          </div>
+          <button class="btn btn-outline btn-small" id="btn-test-chime" style="margin-top: 8px;">
+            🔔 Test Chime Sound
+          </button>
+        </div>
+
+        <!-- Theme Mode -->
+        <div class="setting-group">
+          <label class="setting-label">Appearance & Theme</label>
+          <div class="setting-options" id="setting-theme-group">
+            <button class="pill-btn active" data-theme="parchment">Warm Parchment</button>
+            <button class="pill-btn" data-theme="cloister">Monastic Dark</button>
+            <button class="pill-btn" data-theme="vellum">Sepia Vellum</button>
+          </div>
+        </div>
+
+        <!-- Font Size -->
+        <div class="setting-group">
+          <label class="setting-label">Reading Text Size</label>
+          <div class="setting-options" id="setting-font-size-group">
+            <button class="pill-btn" data-size="small">Small</button>
+            <button class="pill-btn active" data-size="medium">Medium</button>
+            <button class="pill-btn" data-size="large">Large</button>
+            <button class="pill-btn" data-size="xlarge">Extra Large</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
