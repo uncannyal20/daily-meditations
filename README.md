@@ -81,3 +81,10 @@ daily-meditations/
 ├── app.js                         # Application state engine, timer, and audio
 └── README.md
 ```
+
+---
+
+## 🔮 Roadmap & Future Enhancements
+- [ ] **Optional Cloud Sync**: Google OAuth via Supabase/Firebase for multi-device syncing and cloud backup while preserving guest access.
+- [ ] **Data Export / Backup**: Single-click export/import of spiritual resolutions and session history.
+- [ ] **Audio Recitation**: Optional audio playback of preparatory and concluding prayers.
