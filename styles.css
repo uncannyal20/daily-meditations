@@ -855,6 +855,19 @@ details[open] .accordion-arrow {
   white-space: nowrap;
 }
 
+.hud-stage-badge {
+  font-size: 0.74rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background-color: var(--sacred-gold-light);
+  border: 1px solid var(--border-gold);
+  color: var(--sacred-gold);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  white-space: nowrap;
+}
+
 .hud-timer-widget {
   display: flex;
   align-items: center;

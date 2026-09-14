@@ -203,6 +203,22 @@
       state.currentScreen = screenId;
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+
+    // Toggle HUD visibility and stage badge based on prayer phase
+    const hud = document.getElementById('meditation-hud');
+    const hudStage = document.getElementById('hud-stage-badge');
+    if (hud) {
+      if (['preparation', 'reading', 'concluding'].includes(screenId)) {
+        hud.style.display = 'block';
+        if (hudStage) {
+          if (screenId === 'preparation') hudStage.textContent = 'Phase 1: Preparation';
+          else if (screenId === 'reading') hudStage.textContent = 'Phase 2: Meditation';
+          else if (screenId === 'concluding') hudStage.textContent = 'Phase 3: Thanksgiving';
+        }
+      } else {
+        hud.style.display = 'none';
+      }
+    }
   }
 
   // --- DATA LOADING & INITIALIZATION ---
@@ -275,23 +291,38 @@
   }
 
   // --- MEDITATION SELECTION & PRAYER FLOW ---
+  function updateHudBadges(m, stageText) {
+    if (!m) return;
+    const hudBook = document.getElementById('hud-book-badge');
+    const hudChapter = document.getElementById('hud-chapter-badge');
+    const hudStage = document.getElementById('hud-stage-badge');
+
+    if (hudBook) hudBook.textContent = m.bookTitle;
+    if (hudChapter) hudChapter.textContent = m.chapterLabel || `Chapter ${m.chapterNumber}`;
+    if (hudStage && stageText) hudStage.textContent = stageText;
+  }
+
   function selectMeditation(meditation) {
     if (!meditation) return;
     state.activeMeditation = meditation;
-    
-    // Update Preparation screen timer label
-    const timerLabel = document.getElementById('prep-timer-label');
-    if (timerLabel) {
-      timerLabel.textContent = `${state.user.settings.durationMinutes}m`;
-    }
 
+    // Pre-render the reading screen so all texts and badges are ready
+    renderReadingScreen(meditation);
+
+    // Update HUD information for Phase 1
+    updateHudBadges(meditation, 'Phase 1: Preparation');
+
+    // Show Preparation Screen
     showScreen('preparation');
+
+    // Start timer immediately at the preparation stage!
+    startMeditationTimer(state.user.settings.durationMinutes * 60);
   }
 
-  function startReadingAndTimer() {
-    renderReadingScreen(state.activeMeditation);
+  function proceedToReading() {
+    updateHudBadges(state.activeMeditation, 'Phase 2: Meditation');
     showScreen('reading');
-    startMeditationTimer(state.user.settings.durationMinutes * 60);
+    // Timer continues running without interruption from Phase 1
   }
 
   function renderReadingScreen(m) {
@@ -400,16 +431,17 @@
     state.timer.intervalId = setInterval(() => {
       if (!state.timer.isRunning) return;
 
+      state.timer.elapsedSeconds++;
+
       if (state.timer.remainingSeconds > 0) {
         state.timer.remainingSeconds--;
-        state.timer.elapsedSeconds++;
         updateTimerDisplay();
+
+        if (state.timer.remainingSeconds === 0) {
+          chime.play(state.user.settings.sound);
+        }
       } else {
-        // Timer reached zero
-        clearInterval(state.timer.intervalId);
-        state.timer.isRunning = false;
-        if (toggleBtnIcon) toggleBtnIcon.textContent = '▶';
-        chime.play(state.user.settings.sound);
+        updateTimerDisplay();
       }
     }, 1000);
   }
@@ -468,6 +500,10 @@
   function completeSession() {
     const m = state.activeMeditation;
     if (!m) return;
+
+    // Stop and clear timer interval
+    clearInterval(state.timer.intervalId);
+    state.timer.isRunning = false;
 
     const resInput = document.getElementById('resolution-textarea');
     const resolutionText = resInput ? resInput.value.trim() : '';
@@ -743,8 +779,12 @@
     });
 
     // Preparation Screen Actions
-    document.getElementById('btn-back-to-welcome')?.addEventListener('click', () => showScreen('welcome'));
-    document.getElementById('btn-start-meditation-reading')?.addEventListener('click', startReadingAndTimer);
+    document.getElementById('btn-back-to-welcome')?.addEventListener('click', () => {
+      clearInterval(state.timer.intervalId);
+      state.timer.isRunning = false;
+      showScreen('welcome');
+    });
+    document.getElementById('btn-start-meditation-reading')?.addEventListener('click', proceedToReading);
 
     // Reading Screen HUD Actions
     document.getElementById('btn-timer-toggle')?.addEventListener('click', toggleTimer);
@@ -798,11 +838,15 @@
     });
 
     document.getElementById('btn-proceed-concluding')?.addEventListener('click', () => {
+      updateHudBadges(state.activeMeditation, 'Phase 3: Thanksgiving');
       showScreen('concluding');
     });
 
     // Concluding Actions
-    document.getElementById('btn-back-to-reading')?.addEventListener('click', () => showScreen('reading'));
+    document.getElementById('btn-back-to-reading')?.addEventListener('click', () => {
+      updateHudBadges(state.activeMeditation, 'Phase 2: Meditation');
+      showScreen('reading');
+    });
     document.getElementById('btn-complete-session')?.addEventListener('click', completeSession);
 
     // Complete Screen Actions
@@ -903,6 +947,15 @@
     toast.textContent = '✠ Devotion counters and journal history have been reset.';
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 3500);
+  }
+
+  // --- PWA SERVICE WORKER REGISTRATION ---
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch((err) => {
+        console.warn('PWA ServiceWorker notice:', err);
+      });
+    });
   }
 
   // --- BOOTSTRAP ---

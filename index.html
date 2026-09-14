@@ -5,6 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Daily Devotion & Mental Prayer</title>
   <meta name="description" content="Distraction-free daily Catholic mental prayer and spiritual reading application.">
+
+  <!-- Favicon & Mobile App Icons -->
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Mobile & PWA Configuration -->
+  <meta name="theme-color" content="#841b1b">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Devotio">
+  <meta name="application-name" content="Devotio">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Playfair+Display:ital,wght@0,500;0,600;1,400;1,600&display=swap" rel="stylesheet">
@@ -49,6 +66,42 @@
 
   <!-- Main Prayer App Container -->
   <main class="app-main" id="app-main">
+
+    <!-- Sticky / Floating Meditation Bar (Active across Preparation, Reading & Thanksgiving) -->
+    <div class="meditation-hud" id="meditation-hud" style="display: none;">
+      <div class="hud-container">
+        
+        <div class="hud-left">
+          <div class="hud-book-badge" id="hud-book-badge">My Daily Bread</div>
+          <div class="hud-chapter-badge" id="hud-chapter-badge">Chapter 1</div>
+          <div class="hud-stage-badge" id="hud-stage-badge">Phase 1: Preparation</div>
+        </div>
+
+        <!-- Timer Widget -->
+        <div class="hud-timer-widget">
+          <button class="timer-btn" id="btn-timer-toggle" title="Pause / Resume Timer">
+            <span id="timer-icon">⏸</span>
+          </button>
+          <div class="timer-display-group">
+            <div class="timer-countdown" id="timer-countdown">15:00</div>
+            <div class="timer-progress-bar">
+              <div class="timer-progress-fill" id="timer-progress-fill"></div>
+            </div>
+          </div>
+          <button class="timer-btn-subtle" id="btn-add-time" title="Add 5 Minutes">+5m</button>
+        </div>
+
+        <div class="hud-right">
+          <button class="hud-btn" id="btn-toggle-bookmark" title="Bookmark this meditation">
+            <span id="bookmark-icon">☆</span>
+          </button>
+          <button class="hud-btn" id="btn-font-smaller" title="Decrease font size">A-</button>
+          <button class="hud-btn" id="btn-font-larger" title="Increase font size">A+</button>
+          <button class="hud-btn" id="btn-zen-mode" title="Toggle Fullscreen Zen Mode">⛶</button>
+        </div>
+
+      </div>
+    </div>
 
     <!-- ============================================== -->
     <!-- SCREEN 1: WELCOME & SELECTION                  -->
@@ -216,7 +269,7 @@
           <div class="prayer-actions">
             <button class="btn btn-outline" id="btn-back-to-welcome">← Back</button>
             <button class="btn btn-primary btn-large" id="btn-start-meditation-reading">
-              Begin Mental Prayer & Reading (<span id="prep-timer-label">15m</span>) ✠
+              Proceed to Spiritual Reading ✠
             </button>
           </div>
         </div>
@@ -228,41 +281,6 @@
     <!-- SCREEN 3: STEP 2 - READING & MENTAL PRAYER     -->
     <!-- ============================================== -->
     <section class="screen" id="screen-reading">
-      
-      <!-- Sticky / Floating Meditation Bar -->
-      <div class="meditation-hud" id="meditation-hud">
-        <div class="hud-container">
-          
-          <div class="hud-left">
-            <div class="hud-book-badge" id="hud-book-badge">My Daily Bread</div>
-            <div class="hud-chapter-badge" id="hud-chapter-badge">Chapter 1</div>
-          </div>
-
-          <!-- Timer Widget -->
-          <div class="hud-timer-widget">
-            <button class="timer-btn" id="btn-timer-toggle" title="Pause / Resume Timer">
-              <span id="timer-icon">⏸</span>
-            </button>
-            <div class="timer-display-group">
-              <div class="timer-countdown" id="timer-countdown">15:00</div>
-              <div class="timer-progress-bar">
-                <div class="timer-progress-fill" id="timer-progress-fill"></div>
-              </div>
-            </div>
-            <button class="timer-btn-subtle" id="btn-add-time" title="Add 5 Minutes">+5m</button>
-          </div>
-
-          <div class="hud-right">
-            <button class="hud-btn" id="btn-toggle-bookmark" title="Bookmark this meditation">
-              <span id="bookmark-icon">☆</span>
-            </button>
-            <button class="hud-btn" id="btn-font-smaller" title="Decrease font size">A-</button>
-            <button class="hud-btn" id="btn-font-larger" title="Increase font size">A+</button>
-            <button class="hud-btn" id="btn-zen-mode" title="Toggle Fullscreen Zen Mode">⛶</button>
-          </div>
-
-        </div>
-      </div>
 
       <div class="content-wrapper reading-view">
 
