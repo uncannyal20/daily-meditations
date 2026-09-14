@@ -1,6 +1,6 @@
 {
-  "name": "Devotio Diurna - Daily Mental Prayer",
-  "short_name": "Devotio",
+  "name": "Daily Devotion & Mental Prayer",
+  "short_name": "Daily Devotion",
   "description": "Distraction-free daily Catholic mental prayer and spiritual reading application.",
   "start_url": "./",
   "scope": "./",

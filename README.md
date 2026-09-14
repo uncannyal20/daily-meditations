@@ -1,4 +1,4 @@
-# Devotio Diurna — Daily Devotion & Meditation Web App
+# Daily Devotion & Mental Prayer Web App
 
 A lightweight, distraction-free Single-Page Web Application (SPA) designed for daily Catholic mental prayer and spiritual reading (15–20 minutes).
 

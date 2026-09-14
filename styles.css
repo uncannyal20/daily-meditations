@@ -1538,6 +1538,11 @@ body.zen-mode .monastic-parchment-sheet {
   .brand-sub, .btn-label {
     display: none;
   }
+  .brand-title {
+    font-size: 0.95rem;
+    letter-spacing: 0.8px;
+    line-height: 1.2;
+  }
   .hero-title {
     font-size: 1.7rem;
   }
