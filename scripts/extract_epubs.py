@@ -145,87 +145,92 @@ def parse_my_daily_bread(epub_path):
 
 
 def parse_imitation_of_christ(epub_path):
-    print("-> Parsing The Imitation of Christ...")
+    print(f"-> Parsing The Imitation of Christ from {os.path.basename(epub_path)}...")
     book = epub.read_epub(epub_path)
     entries = []
-
-    current_book = "Book One: Admonitions Profitable for the Spiritual Life"
-
-    docs = list(book.get_items_of_type(ebooklib.ITEM_DOCUMENT))
+    book_files = ['c7X.xhtml', 'cDH.xhtml', 'cGU.xhtml', 'cX0.xhtml']
+    docs = [book.get_item_with_href(doc_name) for doc_name in book_files]
+    if not all(docs):
+        docs = []
+        for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
+            soup = BeautifulSoup(item.get_content(), 'html.parser')
+            body = soup.find('body')
+            if body and any(h2.get_text().strip().startswith('Book ') for h2 in body.find_all('h2')):
+                docs.append(item)
+    pending_intro = None
 
     for doc in docs:
+        if not doc:
+            continue
         soup = BeautifulSoup(doc.get_content(), 'html.parser')
-        text = soup.get_text()
-
-        # Skip preface, TOC, footnotes documents
-        if doc.get_name() in ['titlepage.xhtml', 'index_split_000.html', 'index_split_001.html', 'index_split_002.html', 'index_split_003.html', 'index_split_122.html']:
+        body = soup.find('body')
+        if not body:
             continue
 
-        if "THE FIRST BOOK" in text and "ADMONITIONS" in text and "Chapter" not in text:
-            current_book = "Book One: Admonitions Profitable for the Spiritual Life"
-            continue
-        elif "THE SECOND BOOK" in text and "ADMONITIONS" in text and "Chapter" not in text:
-            current_book = "Book Two: Admonitions Concerning the Inner Life"
-            continue
-        elif "THE THIRD BOOK" in text and "CONSOLATION" in text and "Chapter" not in text:
-            current_book = "Book Three: On Inward Consolation"
-            continue
-        elif "THE FOURTH BOOK" in text and "SACRAMENT" in text and "Chapter" not in text:
-            current_book = "Book Four: Of the Sacrament of the Altar"
-            continue
+        current_division = ""
+        current_chapter = None
 
-        ch_match = re.search(r'Chapter\s+([IVXLCDM]+|\d+)\.?\s*([^\n\r]+)', text)
-        if ch_match:
-            ch_num_str = ch_match.group(1)
-            raw_title = clean_text(ch_match.group(2))
+        for el in body.find_all(['h1', 'h2', 'h3', 'p']):
+            text = clean_text(el.get_text())
+            if not text:
+                continue
 
-            # Clean raw_title if it has body text attached
-            if ". " in raw_title and len(raw_title) > 80:
-                raw_title = raw_title.split(". ")[0].strip()
+            if el.name == 'h2':
+                if text.startswith('Book '):
+                    current_division = text
+                elif text.startswith('Chapter '):
+                    if current_chapter and current_chapter['paragraphs']:
+                        entries.append(current_chapter)
 
-            paras = [clean_text(p.get_text()) for p in soup.find_all(['p', 'div']) if clean_text(p.get_text())]
+                    ch_match = re.match(r'Chapter\s+(\d+):\s*(.*)', text)
+                    if ch_match:
+                        ch_num = int(ch_match.group(1))
+                        ch_title = ch_match.group(2).strip()
+                    else:
+                        ch_num = len(entries) + 1
+                        ch_title = text
 
-            clean_paras = []
-            for p in paras:
-                if p.startswith(f"Chapter {ch_num_str}") or p.startswith(f"Chapter {ch_num_str}."):
-                    # Check if paragraph has text after chapter header line
-                    continue
-                if p and p != raw_title and not p.startswith("THE ") and "BOOK." not in p and "Digireads" not in p:
-                    clean_p = re.sub(r'\[\d+\]', '', p).strip()
-                    if clean_p and clean_p != raw_title:
-                        clean_paras.append(clean_p)
+                    current_chapter = {
+                        "id": f"ioc_{len(entries) + 1}",
+                        "bookId": "the_imitation_of_christ",
+                        "bookTitle": "The Imitation of Christ",
+                        "author": "Thomas à Kempis",
+                        "division": current_division,
+                        "part": current_division.split(':')[0].strip() if ':' in current_division else current_division,
+                        "section": "",
+                        "chapterNumber": len(entries) + 1,
+                        "chapterLabel": f"Chapter {ch_num}",
+                        "title": ch_title,
+                        "subtitle": current_division,
+                        "scripture": "",
+                        "sections": {
+                            "body": []
+                        },
+                        "paragraphs": [],
+                        "estimatedMinutes": 15
+                    }
 
-            # If clean_paras is empty because the whole text was in the chapter heading paragraph
-            if not clean_paras:
-                for p in soup.find_all(['p', 'div']):
-                    txt = clean_text(p.get_text())
-                    if txt.startswith(f"Chapter {ch_num_str}"):
-                        # Extract everything after the title
-                        parts = txt.split(raw_title, 1)
-                        if len(parts) > 1 and parts[1].strip():
-                            body_txt = re.sub(r'\[\d+\]', '', parts[1]).strip()
-                            clean_paras.append(body_txt)
+                    if pending_intro and current_chapter:
+                        for item in pending_intro:
+                            current_chapter['paragraphs'].append(item)
+                            current_chapter['sections']['body'].append(item)
+                        pending_intro = None
+            elif el.name == 'h3':
+                if current_chapter:
+                    subheading = f"† {text}"
+                    current_chapter['paragraphs'].append(subheading)
+                    current_chapter['sections']['body'].append(subheading)
+                else:
+                    pending_intro = [f"† {text}"]
+            elif el.name == 'p':
+                if current_chapter:
+                    current_chapter['paragraphs'].append(text)
+                    current_chapter['sections']['body'].append(text)
+                elif pending_intro is not None:
+                    pending_intro.append(text)
 
-            if clean_paras:
-                entries.append({
-                    "id": f"ioc_{len(entries)+1}",
-                    "bookId": "the_imitation_of_christ",
-                    "bookTitle": "The Imitation of Christ",
-                    "author": "Thomas à Kempis",
-                    "division": current_book,
-                    "part": current_book.split(":")[0].strip() if ":" in current_book else "",
-                    "section": "",
-                    "chapterNumber": len(entries) + 1,
-                    "chapterLabel": f"Chapter {ch_num_str}",
-                    "title": raw_title or f"Chapter {ch_num_str}",
-                    "subtitle": current_book,
-                    "scripture": "",
-                    "sections": {
-                        "body": clean_paras
-                    },
-                    "paragraphs": clean_paras,
-                    "estimatedMinutes": 15
-                })
+        if current_chapter and current_chapter['paragraphs']:
+            entries.append(current_chapter)
 
     print(f"   Successfully parsed {len(entries)} chapters from The Imitation of Christ.")
     return entries
@@ -313,7 +318,20 @@ def main():
     os.makedirs(data_dir, exist_ok=True)
 
     mdb_path = os.path.join(epubs_dir, 'My_Daily_Bread.epub')
-    ioc_path = os.path.join(epubs_dir, 'The_Imitation_of_Christ.epub')
+    ioc_candidates = [
+        'The Imitation of Christ_Modern Translation.epub',
+        'the imitation of christ.epub',
+        'The_Imitation_of_Christ_Modern.epub',
+        'The_Imitation_of_Christ.epub'
+    ]
+    ioc_path = None
+    for cand in ioc_candidates:
+        cand_path = os.path.join(epubs_dir, cand)
+        if os.path.exists(cand_path):
+            ioc_path = cand_path
+            break
+    if not ioc_path:
+        raise FileNotFoundError(f"Could not find Imitation of Christ EPUB in {epubs_dir}")
     jkc_path = os.path.join(epubs_dir, 'The_Joy_of_Knowing_Christ.epub')
 
     mdb_entries = parse_my_daily_bread(mdb_path)
@@ -339,15 +357,15 @@ def main():
         {
             "id": "the_imitation_of_christ",
             "title": "The Imitation of Christ",
-            "subtitle": "Spiritual Admonitions and Inward Consolation",
+            "subtitle": "A Modern Translation (by Peter Northcutt)",
             "author": "Thomas à Kempis",
-            "description": "One of the greatest spiritual classics in Christian history on humility, detachment, and following Christ.",
+            "description": "One of the greatest spiritual classics in Christian history on humility, detachment, and following Christ, presented in a fresh, modern translation.",
             "count": len(ioc_entries),
             "divisions": [
-                "Book One: Admonitions Profitable for the Spiritual Life",
-                "Book Two: Admonitions Concerning the Inner Life",
-                "Book Three: On Inward Consolation",
-                "Book Four: Of the Sacrament of the Altar"
+                "Book One: Advice for a Spiritual Life",
+                "Book Two: Suggestions for the Inner Life",
+                "Book Three: Inner Comfort",
+                "Book Four: The Sacrament of the Altar"
             ]
         },
         {

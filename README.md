@@ -12,7 +12,7 @@ The application structures prayer into the traditional three phases (Preparation
    - 196 structured daily meditations (*Book One: Purification*, *Book Two: Imitation*, *Book Three: Union*).
    - Structured into **Christ Speaks**, **Think/Reflect**, and **Colloquy/Prayer**.
 2. **The Imitation of Christ** — *Thomas à Kempis*
-   - 114 chapters across 4 books on humility, detachment, inner consolation, and Holy Communion.
+   - 114 chapters across 4 books on humility, detachment, inner consolation, and Holy Communion (Modern Translation).
 3. **The Joy of Knowing Christ** — *Pope Benedict XVI*
    - 55 contemplative meditations on Gospel passages.
 

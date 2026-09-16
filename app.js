@@ -325,6 +325,21 @@
     // Timer continues running without interruption from Phase 1
   }
 
+  function formatDropCap(text) {
+    if (!text) return '';
+    const match = text.match(/^([“"']?)([A-Za-z0-9])(.*)$/s);
+    if (match) {
+      const quote = match[1];
+      const char = match[2];
+      const rest = match[3];
+      if (quote) {
+        return `<span class="drop-cap">${quote}${char}</span>${rest}`;
+      }
+      return `<span class="drop-cap">${char}</span>${rest}`;
+    }
+    return `<span class="drop-cap">${text.charAt(0)}</span>${text.slice(1)}`;
+  }
+
   function renderReadingScreen(m) {
     if (!m) return;
 
@@ -371,7 +386,7 @@
         cSection.className = 'mdb-section mdb-section-christ';
         cSection.innerHTML = `
           <div class="mdb-rubric-label">✠ Christ Speaks</div>
-          ${m.sections.christ.map((p, idx) => `<p>${idx === 0 ? `<span class="drop-cap">${p.charAt(0)}</span>${p.slice(1)}` : p}</p>`).join('')}
+          ${m.sections.christ.map((p, idx) => `<p>${idx === 0 ? formatDropCap(p) : p}</p>`).join('')}
         `;
         bodyEl.appendChild(cSection);
       }
@@ -400,14 +415,23 @@
     } else {
       // Standard Chapters (Imitation of Christ / Joy of Knowing Christ)
       const paras = m.paragraphs || [];
-      paras.forEach((p, idx) => {
-        const pTag = document.createElement('p');
-        if (idx === 0) {
-          pTag.innerHTML = `<span class="drop-cap">${p.charAt(0)}</span>${p.slice(1)}`;
+      let isFirstBodyPara = true;
+      paras.forEach((p) => {
+        if (p.startsWith('†')) {
+          const hTag = document.createElement('h4');
+          hTag.className = 'reading-subheading';
+          hTag.textContent = p;
+          bodyEl.appendChild(hTag);
         } else {
-          pTag.textContent = p;
+          const pTag = document.createElement('p');
+          if (isFirstBodyPara) {
+            pTag.innerHTML = formatDropCap(p);
+            isFirstBodyPara = false;
+          } else {
+            pTag.textContent = p;
+          }
+          bodyEl.appendChild(pTag);
         }
-        bodyEl.appendChild(pTag);
       });
     }
 
