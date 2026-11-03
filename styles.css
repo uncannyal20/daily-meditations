@@ -104,6 +104,8 @@ html {
 }
 
 body {
+  overflow-x: hidden; /* fallback for browsers without overflow: clip */
+  overflow-x: clip;   /* never scroll sideways; unlike hidden, keeps sticky header working */
   font-family: var(--font-serif);
   background-color: var(--bg-app);
   color: var(--text-main);
@@ -1587,11 +1589,19 @@ body.zen-mode .monastic-parchment-sheet {
     flex-shrink: 0;
   }
   .icon-btn {
-    padding: 7px 9px;
+    padding: 6px 8px;
+  }
+  .icon-btn svg {
+    width: 18px;
+    height: 18px;
   }
   .theme-toggle-btn {
+    font-size: 1rem;
     padding: 5px 8px;
+    min-width: 32px;
+    justify-content: center;
   }
+
   .meditation-hud {
     padding: 6px 10px;
   }
@@ -1616,11 +1626,7 @@ body.zen-mode .monastic-parchment-sheet {
   }
 }
 
-@media (max-width: 400px) {
-  /* Theme is still available in Settings; frees room for the title */
-  .theme-toggle-btn {
-    display: none;
-  }
+@media (max-width: 440px) {
   .brand-cross {
     font-size: 1.3rem;
   }
@@ -1629,10 +1635,18 @@ body.zen-mode .monastic-parchment-sheet {
     letter-spacing: 0.4px;
   }
   .header-actions {
-    gap: 4px;
+    gap: 5px;
   }
   .icon-btn {
-    padding: 6px 7px;
+    padding: 5px 7px;
+  }
+  .icon-btn svg {
+    width: 17px;
+    height: 17px;
+  }
+  .theme-toggle-btn {
+    padding: 4px 7px;
+    min-width: 30px;
   }
   .hud-timer-widget {
     padding: 3px 8px;
@@ -1669,6 +1683,10 @@ body.zen-mode .monastic-parchment-sheet {
 }
 
 @media (max-width: 350px) {
+  /* Very small phones only: theme is still available in Settings */
+  .theme-toggle-btn {
+    display: none;
+  }
   .brand-title {
     font-size: 0.74rem;
     letter-spacing: 0.2px;
@@ -1894,4 +1912,28 @@ body:not(.authed) { overflow: hidden; }
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Date line beneath the header (phones only) */
+.mobile-date-bar {
+  display: none;
+  padding: 6px 12px;
+  text-align: center;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  background-color: var(--bg-app);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+@media (max-width: 768px) {
+  .mobile-date-bar {
+    display: block;
+  }
+}
+
+.mobile-date-bar:empty,
+body.zen-mode .mobile-date-bar {
+  display: none !important;
 }

@@ -3,12 +3,12 @@
  * Enables PWA installability and offline prayer reading
  */
 
-const CACHE_NAME = 'devotio-diurna-v4';
+const CACHE_NAME = 'devotio-diurna-v5';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './styles.css',
-  './app.js',
+  './styles.css?v=5',
+  './app.js?v=5',
   './assets/vendor/pocketbase.umd.js',
   './manifest.json',
   './data/meditations.json',
@@ -61,14 +61,14 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(req)
       .then((response) => {
-        if (response && response.status === 200 && !url.search) {
+        if (response && response.status === 200) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(req, responseClone));
         }
         return response;
       })
       .catch(() =>
-        caches.match(req).then((cached) =>
+        caches.match(req, { ignoreSearch: true }).then((cached) =>
           cached || (req.mode === 'navigate' ? caches.match('./index.html') : undefined)
         )
       )

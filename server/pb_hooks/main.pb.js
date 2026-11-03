@@ -43,3 +43,17 @@ onBootstrap((e) => {
 
   e.app.save(users);
 });
+
+/**
+ * HTTP caching for the static app. Without explicit headers Cloudflare caches
+ * .js/.css for 4 hours, so deploys didn't show up. App code and the service
+ * worker must always be revalidated; heavy immutable assets can be cached.
+ */
+routerUse((e) => {
+  const path = e.request.url.path || "/";
+  if (!path.startsWith("/api/") && !path.startsWith("/_/")) {
+    const longLived = /^\/(assets\/(icons|audio|vendor)|epubs)\//.test(path) || path === "/favicon.ico";
+    e.response.header().set("Cache-Control", longLived ? "public, max-age=604800" : "no-cache");
+  }
+  return e.next();
+});

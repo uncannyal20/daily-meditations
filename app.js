@@ -570,6 +570,8 @@
     const dateStr = getFormattedCurrentDate();
     const dateEl = document.getElementById('current-date-display');
     if (dateEl) dateEl.textContent = dateStr;
+    const mobileDateEl = document.getElementById('mobile-date-display');
+    if (mobileDateEl) mobileDateEl.textContent = dateStr;
     const badgeEl = document.getElementById('welcome-date-badge');
     if (badgeEl) badgeEl.textContent = dateStr;
 
