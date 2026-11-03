@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -ld /apps /home/centerpide/apps/ddcatholic)",
+      "Read(//home/centerpide/apps/**)",
+      "Bash(getent hosts *)",
+      "Bash(systemctl is-active *)",
+      "Bash(git add *)",
+      "Bash(git commit -q -m 'Add Docker + nginx setup for Coolify deployment *)",
+      "Bash(git -c user.name=cv-assist -c user.email=cv-assist@users.noreply.github.com commit -q -m 'Add Docker + nginx setup for Coolify deployment *)",
+      "Bash(dig +short ddcatholic.uncannylabs.xyz)",
+      "Bash(dig +short rrcatholic.uncannylabs.xyz)",
+      "Bash(sudo -n journalctl -u cloudflared --since '-5 min' --no-pager)",
+      "Bash(git rm *)",
+      "Bash(git -c user.name=cv-assist -c user.email=cv-assist@users.noreply.github.com commit -q -m 'Remove GitHub Pages CNAME; site now hosted on Coolify *)",
+      "Bash(mkdir -p assets/vendor)",
+      "Bash(docker rm *)",
+      "Bash(sed *)",
+      "Bash(git -c user.name=cv-assist -c user.email=cv-assist@users.noreply.github.com commit -q -m 'Fix stale deploys and polish mobile header *)",
+      "Bash(git -c user.name=cv-assist -c user.email=cv-assist@users.noreply.github.com commit -q -m 'Fix reading-screen navigation; equal-width step pills *)",
+      "Bash(git archive *)",
+      "Bash(python3 -c 'import sys,json;print\\(\"fields:\",[f[\"name\"] for f in json.load\\(sys.stdin\\)[\"fields\"]]\\)')",
+      "Bash(python3 -m json.tool)",
+      "Bash(git -c user.name=cv-assist -c user.email=cv-assist@users.noreply.github.com commit -q -m 'Add reflection step to Thanksgiving and save it to the journal *)",
+      "Bash(git -c user.name=cv-assist -c user.email=cv-assist@users.noreply.github.com commit -q -m 'Keep reading buttons visible in fullscreen mode *)",
+      "Bash(git -c user.name=cv-assist -c user.email=cv-assist@users.noreply.github.com commit -q -m 'Hide the timer too when the HUD is collapsed *)",
+      "Bash(git -c user.name=cv-assist -c user.email=cv-assist@users.noreply.github.com commit -q -m 'New cross icons; full-label stacked Previous/Next on phones *)"
+    ]
+  }
+}

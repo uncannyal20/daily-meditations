@@ -2069,8 +2069,8 @@ body.zen-mode #btn-zen-mode {
   white-space: nowrap;
 }
 @media (max-width: 480px) {
-  /* Side-by-side on phones: shorten to "← Previous" / "Next →" */
-  #screen-reading .reading-nav-group.has-prev .nav-word {
-    display: none;
+  /* Phones: keep the full labels and stack Previous / Next full-width */
+  #screen-reading .reading-nav-group {
+    flex-direction: column;
   }
 }

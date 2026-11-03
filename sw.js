@@ -3,20 +3,19 @@
  * Enables PWA installability and offline prayer reading
  */
 
-const CACHE_NAME = 'devotio-diurna-v14';
+const CACHE_NAME = 'devotio-diurna-v16';
 const ASSETS_TO_CACHE = [
   './',
-  './index.html',
-  './styles.css?v=14',
-  './app.js?v=14',
+  './styles.css?v=16',
+  './app.js?v=16',
   './assets/vendor/pocketbase.umd.js',
-  './manifest.json',
+  './manifest.json?v=2',
   './data/meditations.json',
-  './assets/icons/icon-192.png',
-  './assets/icons/icon-512.png',
-  './assets/icons/apple-touch-icon.png',
-  './assets/icons/favicon-32.png',
-  './assets/icons/favicon.svg',
+  './assets/icons/icon-192.png?v=2',
+  './assets/icons/icon-512.png?v=2',
+  './assets/icons/apple-touch-icon.png?v=2',
+  './assets/icons/favicon-32.png?v=2',
+  './assets/icons/favicon.svg?v=2',
   './assets/audio/bell.mp3',
   './assets/audio/bell.wav'
 ];
@@ -69,7 +68,7 @@ self.addEventListener('fetch', (event) => {
       })
       .catch(() =>
         caches.match(req, { ignoreSearch: true }).then((cached) =>
-          cached || (req.mode === 'navigate' ? caches.match('./index.html') : undefined)
+          cached || (req.mode === 'navigate' ? caches.match('./') : undefined)
         )
       )
   );
