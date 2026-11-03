@@ -548,6 +548,7 @@
     }
 
     document.body.classList.add('authed');
+    trackHeaderHeight();
     renderAccount();
     loadPersistedState();
     updateStreakCheck();
@@ -1035,6 +1036,7 @@
 
   // --- SETTINGS & THEMES ---
   function applySettingsToUI() {
+    applyHudCollapsed();
     const s = state.user.settings;
 
     // Apply Theme
@@ -1063,6 +1065,29 @@
     updatePillButtons('#setting-font-size-group', 'data-size', s.fontSize);
   }
 
+  function applyHudCollapsed() {
+    const collapsed = !!state.user.settings.hudCollapsed;
+    const hud = document.getElementById('meditation-hud');
+    const btn = document.getElementById('btn-hud-collapse');
+    if (hud) hud.classList.toggle('collapsed', collapsed);
+    if (btn) {
+      const label = collapsed ? 'Show reading tools' : 'Hide reading tools';
+      btn.setAttribute('aria-expanded', String(!collapsed));
+      btn.setAttribute('title', label);
+      btn.setAttribute('aria-label', label);
+    }
+  }
+
+  // Keep the sticky HUD directly beneath the header, whatever its height.
+  function trackHeaderHeight() {
+    const header = document.querySelector('.app-header');
+    if (!header) return;
+    const update = () => document.documentElement.style.setProperty('--header-h', `${header.offsetHeight}px`);
+    update();
+    if ('ResizeObserver' in window) new ResizeObserver(update).observe(header);
+    else window.addEventListener('resize', update);
+  }
+
   function updatePillButtons(containerSelector, attrName, targetVal) {
     const buttons = document.querySelectorAll(`${containerSelector} .pill-btn`);
     buttons.forEach(btn => {
@@ -1089,6 +1114,11 @@
     document.getElementById('btn-open-journal')?.addEventListener('click', openJournalModal);
     document.getElementById('btn-open-settings')?.addEventListener('click', openSettingsModal);
     document.getElementById('btn-signout')?.addEventListener('click', signOut);
+    document.getElementById('btn-hud-collapse')?.addEventListener('click', () => {
+      state.user.settings.hudCollapsed = !state.user.settings.hudCollapsed;
+      applyHudCollapsed();
+      savePersistedState();
+    });
 
     // Theme Toggle (Quick switch between Parchment and Cloister)
     document.getElementById('btn-toggle-theme')?.addEventListener('click', () => {

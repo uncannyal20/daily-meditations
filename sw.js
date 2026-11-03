@@ -3,7 +3,7 @@
  * Enables PWA installability and offline prayer reading
  */
 
-const CACHE_NAME = 'devotio-diurna-v2';
+const CACHE_NAME = 'devotio-diurna-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

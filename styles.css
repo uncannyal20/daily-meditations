@@ -813,7 +813,7 @@ details[open] .accordion-arrow {
 /* Meditation HUD (Floating Sticky Bar) */
 .meditation-hud {
   position: sticky;
-  top: 58px;
+  top: var(--header-h, 58px);
   z-index: 90;
   background-color: var(--bg-hud);
   border-bottom: 1px solid var(--border-gold);
@@ -1569,6 +1569,173 @@ body.zen-mode .monastic-parchment-sheet {
   .hud-left {
     display: none;
   }
+  .header-date {
+    display: none;
+  }
+  .header-container {
+    gap: 8px;
+  }
+  .brand {
+    gap: 8px;
+    min-width: 0;
+  }
+  .brand-title {
+    white-space: nowrap;
+  }
+  .header-actions {
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .icon-btn {
+    padding: 7px 9px;
+  }
+  .theme-toggle-btn {
+    padding: 5px 8px;
+  }
+  .meditation-hud {
+    padding: 6px 10px;
+  }
+  .hud-container {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .hud-timer-widget {
+    gap: 6px;
+    padding: 3px 10px;
+  }
+  .hud-right {
+    gap: 4px;
+  }
+  .hud-btn {
+    padding: 5px 7px;
+  }
+  .reading-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 400px) {
+  /* Theme is still available in Settings; frees room for the title */
+  .theme-toggle-btn {
+    display: none;
+  }
+  .brand-cross {
+    font-size: 1.3rem;
+  }
+  .brand-title {
+    font-size: 0.82rem;
+    letter-spacing: 0.4px;
+  }
+  .header-actions {
+    gap: 4px;
+  }
+  .icon-btn {
+    padding: 6px 7px;
+  }
+  .hud-timer-widget {
+    padding: 3px 8px;
+  }
+  .timer-countdown {
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+  }
+  .timer-progress-bar {
+    width: 56px;
+  }
+  .hud-btn {
+    padding: 4px 6px;
+    font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .prayer-step-header {
+    gap: 4px;
+  }
+  .step-pill {
+    padding: 4px 8px;
+    font-size: 0.74rem;
+    gap: 4px;
+    min-width: 0;
+    text-align: center;
+    line-height: 1.2;
+  }
+  .step-line {
+    flex: 0 1 12px;
+    min-width: 4px;
+  }
+}
+
+@media (max-width: 350px) {
+  .brand-title {
+    font-size: 0.74rem;
+    letter-spacing: 0.2px;
+  }
+  .brand {
+    gap: 6px;
+  }
+}
+
+/* Collapsible meditation HUD ("accordion"): collapsed = slim timer strip */
+.hud-collapse-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: var(--bg-sheet);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.hud-collapse-btn:hover {
+  border-color: var(--border-gold);
+  color: var(--text-main);
+}
+
+.hud-collapse-btn svg {
+  transition: transform 0.25s ease;
+}
+
+.meditation-hud.collapsed {
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+.meditation-hud.collapsed .hud-left,
+.meditation-hud.collapsed .hud-right,
+.meditation-hud.collapsed .timer-btn-subtle {
+  display: none !important;
+}
+
+.meditation-hud.collapsed .hud-container {
+  flex-wrap: nowrap;
+  justify-content: center;
+}
+
+.meditation-hud.collapsed .hud-timer-widget {
+  padding: 2px 12px;
+  box-shadow: none;
+}
+
+.meditation-hud.collapsed .timer-countdown {
+  font-size: 1.05rem;
+}
+
+.meditation-hud.collapsed .hud-collapse-btn {
+  width: 26px;
+  height: 26px;
+}
+
+.meditation-hud.collapsed .hud-collapse-btn svg {
+  transform: rotate(180deg);
 }
 
 /* ==========================================================================
