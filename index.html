@@ -25,7 +25,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Playfair+Display:ital,wght@0,500;0,600;1,400;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=10">
+  <link rel="stylesheet" href="styles.css?v=14">
 </head>
 <body>
 
@@ -119,6 +119,7 @@
           </button>
           <button class="hud-btn" id="btn-font-smaller" title="Decrease font size">A-</button>
           <button class="hud-btn" id="btn-font-larger" title="Increase font size">A+</button>
+          <button class="hud-btn" id="btn-music-toggle" type="button" aria-pressed="false" title="Play soft background music" aria-label="Play soft background music">♪</button>
           <button class="hud-btn" id="btn-zen-mode" title="Toggle Fullscreen Zen Mode">⛶</button>
         </div>
 
@@ -351,7 +352,10 @@
               <button class="btn btn-primary btn-large" id="btn-proceed-concluding">
                 Proceed to Thanksgiving & Resolution ✠
               </button>
-              <button class="btn btn-outline" id="btn-next-chapter" title="Go to the next meditation">Next Meditation →</button>
+              <div class="reading-nav-group">
+                <button class="btn btn-outline" id="btn-prev-meditation" title="Back to the meditation you were reading" hidden>← Previous<span class="nav-word"> Meditation</span></button>
+                <button class="btn btn-outline" id="btn-next-chapter" title="Go to the next meditation">Next<span class="nav-word"> Meditation</span> →</button>
+              </div>
             </div>
 
           </div>
@@ -638,6 +642,21 @@
           </button>
         </div>
 
+        <!-- Background Music -->
+        <div class="setting-group">
+          <label class="setting-label">Background Music</label>
+          <div class="setting-options" id="setting-music-group">
+            <button class="pill-btn active" data-music="off">Off</button>
+            <button class="pill-btn" data-music="on">Soft Ambient</button>
+          </div>
+          <div class="music-volume-row">
+            <span aria-hidden="true">🔈</span>
+            <input type="range" id="setting-music-volume" min="0" max="100" step="1" value="60" aria-label="Background music volume">
+            <span aria-hidden="true">🔊</span>
+          </div>
+          <p class="setting-hint">A gentle, original ambient loop that plays during your devotion. Use the ♪ button on the timer bar to switch it on or off while praying.</p>
+        </div>
+
         <!-- Theme Mode -->
         <div class="setting-group">
           <label class="setting-label">Appearance & Theme</label>
@@ -675,6 +694,6 @@
   </div>
 
   <script src="assets/vendor/pocketbase.umd.js"></script>
-  <script src="app.js?v=10"></script>
+  <script src="app.js?v=14"></script>
 </body>
 </html>

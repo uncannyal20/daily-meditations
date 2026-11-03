@@ -1969,3 +1969,108 @@ body.zen-mode #btn-zen-mode {
   border-color: var(--rubric-crimson);
   color: #ffffff;
 }
+
+/* Previous / Next meditation pair on the reading screen */
+.reading-nav-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.reading-nav-group .btn[hidden] {
+  display: none;
+}
+
+/* Uniform square HUD buttons (star, A-, A+, fullscreen, music, collapse) */
+:root { --hud-btn-size: 30px; }
+.hud-btn,
+.hud-collapse-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--hud-btn-size);
+  height: var(--hud-btn-size);
+  padding: 0;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+}
+@media (max-width: 768px) {
+  :root { --hud-btn-size: 28px; }
+}
+.meditation-hud.collapsed .hud-collapse-btn {
+  width: var(--hud-btn-size);
+  height: var(--hud-btn-size);
+}
+
+/* Background music controls */
+#btn-music-toggle.active {
+  background: var(--rubric-crimson);
+  border-color: var(--rubric-crimson);
+  color: #ffffff;
+}
+
+.music-volume-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  max-width: 360px;
+  color: var(--text-muted);
+}
+
+.music-volume-row input[type="range"] {
+  flex: 1;
+  accent-color: var(--rubric-crimson);
+}
+
+.setting-hint {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+/* Very narrow phones: make room for the music button (text size is in Settings) */
+@media (max-width: 350px) {
+  #btn-font-smaller,
+  #btn-font-larger {
+    display: none;
+  }
+}
+
+/* Reading-screen actions: one centred column, every button as wide as the
+   primary "Proceed" button; Previous/Next share a row when both show. */
+#screen-reading .reading-actions {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  gap: 12px;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+#screen-reading .reading-actions > .btn,
+#screen-reading .reading-nav-group .btn {
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+}
+#screen-reading .reading-nav-group {
+  flex-wrap: nowrap;
+  gap: 12px;
+}
+#screen-reading .reading-nav-group .btn {
+  flex: 1 1 0;
+  min-width: 0;
+}
+#screen-reading .reading-nav-group .btn {
+  white-space: nowrap;
+}
+@media (max-width: 480px) {
+  /* Side-by-side on phones: shorten to "← Previous" / "Next →" */
+  #screen-reading .reading-nav-group.has-prev .nav-word {
+    display: none;
+  }
+}
