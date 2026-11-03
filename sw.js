@@ -3,12 +3,12 @@
  * Enables PWA installability and offline prayer reading
  */
 
-const CACHE_NAME = 'devotio-diurna-v8';
+const CACHE_NAME = 'devotio-diurna-v9';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './styles.css?v=8',
-  './app.js?v=8',
+  './styles.css?v=9',
+  './app.js?v=9',
   './assets/vendor/pocketbase.umd.js',
   './manifest.json',
   './data/meditations.json',

@@ -1147,7 +1147,6 @@ details[open] .accordion-arrow {
 /* Zen Mode (Fullscreen Distraction-Free) */
 body.zen-mode .app-header,
 body.zen-mode .prayer-step-header,
-body.zen-mode .reading-actions,
 body.zen-mode .contemplation-prompt {
   display: none !important;
 }
@@ -1964,4 +1963,11 @@ body.zen-mode .mobile-date-bar {
 /* Space between the stacked reflection and resolution boxes */
 .resolution-box + .resolution-box {
   margin-top: 16px;
+}
+
+/* Fullscreen toggle shows as pressed while active */
+body.zen-mode #btn-zen-mode {
+  background: var(--rubric-crimson);
+  border-color: var(--rubric-crimson);
+  color: #ffffff;
 }

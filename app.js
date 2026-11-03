@@ -511,7 +511,20 @@
   }
 
   // --- UI NAVIGATION & SCREEN TRANSITIONS ---
+  function setZenMode(on) {
+    document.body.classList.toggle('zen-mode', on);
+    const btn = document.getElementById('btn-zen-mode');
+    if (btn) {
+      const label = on ? 'Exit fullscreen reading' : 'Fullscreen reading (hide header)';
+      btn.setAttribute('title', label);
+      btn.setAttribute('aria-label', label);
+      btn.setAttribute('aria-pressed', String(on));
+    }
+  }
+
   function showScreen(screenId) {
+    // Fullscreen is a reading-only mode; leaving the reading restores the header.
+    if (screenId !== 'reading' && document.body.classList.contains('zen-mode')) setZenMode(false);
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const target = document.getElementById(`screen-${screenId}`);
     if (target) {
@@ -1226,7 +1239,7 @@
     });
 
     document.getElementById('btn-zen-mode')?.addEventListener('click', () => {
-      document.body.classList.toggle('zen-mode');
+      setZenMode(!document.body.classList.contains('zen-mode'));
     });
 
     // Reading Navigation Buttons
@@ -1327,7 +1340,7 @@
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         if (document.body.classList.contains('zen-mode')) {
-          document.body.classList.remove('zen-mode');
+          setZenMode(false);
         } else {
           closeAllModals();
         }
