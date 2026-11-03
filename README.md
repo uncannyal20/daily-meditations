@@ -104,4 +104,5 @@ daily-meditations/
 ## 🔮 Roadmap & Future Enhancements
 - [x] **Cloud Sync**: Google sign-in via self-hosted PocketBase for multi-device syncing and backup.
 - [ ] **Data Export / Backup**: Single-click export/import of spiritual resolutions and session history.
+- [x] **Background Music**: soft ambient loop or Gregorian chant (see `scripts/ambient/README.md` for sources and licences).
 - [ ] **Audio Recitation**: Optional audio playback of preparatory and concluding prayers.

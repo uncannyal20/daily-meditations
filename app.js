@@ -27,6 +27,7 @@
         durationMinutes: 15,
         sound: 'monastery',
         musicOn: false,
+        musicTrack: 'ambient',
         musicVolume: 0.6,
         theme: 'parchment',
         fontSize: 'medium'
@@ -140,208 +141,192 @@
 
   const chime = new ChimeAudio();
 
-  // --- AMBIENT BACKGROUND MUSIC (generated live with Web Audio) ---
-  // An original, slowly evolving pad: four chords of 75s each (a 5-minute
-  // cycle that repeats), cross-faded, through a soft low-pass and reverb,
-  // with occasional quiet bell tones. Nothing is downloaded.
-  class AmbientMusic {
+  // --- BACKGROUND MUSIC (looping audio tracks) ---
+  // Plays real audio files through an <audio> element, which iPhones keep
+  // playing far more reliably than live Web Audio (screen lock, the timer
+  // bell, other interruptions). A watchdog restarts playback if it stalls.
+  const MUSIC_TRACKS = {
+    ambient: {
+      src: 'assets/audio/ambient-loop.m4a?v=1',
+      title: 'Soft Ambient',
+      artist: 'The Daily Devotion'
+    },
+    chant: {
+      src: 'assets/audio/gregorian-chant.m4a?v=1',
+      title: 'Introit: Resurrexi et adhuc tecum sum (Gregorian chant)',
+      artist: 'The Tudor Consort'
+    }
+  };
+
+  class BackgroundMusic {
     constructor() {
-      this.ctx = null;
-      this.master = null;
-      this.input = null;
-      this.playing = false;
-      this.timer = null;
-      this.startTime = 0;
-      this.nextChordAt = 0;
-      this.chordIndex = 0;
-      this.nextBellAt = 0;
-      this.bellStep = 0;
+      this.audio = null;
+      this.track = null;
+      this.want = false;
       this.volume = 0.6;
-      this.CHORD_SECONDS = 75;
-      this.FADE = 14;
-      // D, Bm, G, Asus2 (Hz). Low root + open voicing for a calm, prayerful colour.
-      this.CHORDS = [
-        [73.42, 110.0, 146.83, 220.0, 293.66, 369.99],
-        [61.74, 92.5, 123.47, 185.0, 246.94, 293.66],
-        [49.0, 98.0, 146.83, 196.0, 246.94, 293.66],
-        [55.0, 110.0, 164.81, 220.0, 246.94, 329.63]
-      ];
-      this.BELLS = [587.33, 659.25, 739.99, 880.0, 987.77, 1174.66]; // D major pentatonic
+      this.fadeTimer = null;
+      this.watchdog = null;
+      // iOS ignores programmatic volume (hardware buttons only).
+      const probe = document.createElement('audio');
+      probe.volume = 0.5;
+      this.volumeSettable = probe.volume === 0.5;
     }
 
-    ensureGraph() {
-      if (this.ctx) return true;
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (!AudioCtx) return false;
-      const ctx = this.ctx = new AudioCtx();
-
-      this.master = ctx.createGain();
-      this.master.gain.value = 0;
-      this.master.connect(ctx.destination);
-
-      const lowpass = ctx.createBiquadFilter();
-      lowpass.type = 'lowpass';
-      lowpass.frequency.value = 1400;
-      lowpass.Q.value = 0.3;
-
-      // Generated reverb impulse: decaying stereo noise (~5s).
-      const len = Math.floor(ctx.sampleRate * 5);
-      const impulse = ctx.createBuffer(2, len, ctx.sampleRate);
-      for (let c = 0; c < 2; c++) {
-        const d = impulse.getChannelData(c);
-        let seed = c ? 7 : 3;
-        for (let i = 0; i < len; i++) {
-          seed = (seed * 16807) % 2147483647;
-          d[i] = ((seed / 2147483647) * 2 - 1) * Math.pow(1 - i / len, 3);
-        }
+    ensure(trackKey) {
+      const key = MUSIC_TRACKS[trackKey] ? trackKey : 'ambient';
+      if (!this.audio) {
+        const a = this.audio = new Audio();
+        a.loop = true;
+        a.preload = 'auto';
+        a.setAttribute('playsinline', '');
+        // Something paused us that wasn't the user (interruption, bell, etc.)
+        a.addEventListener('pause', () => { if (this.want) setTimeout(() => this.kick(), 700); });
+        a.addEventListener('ended', () => { if (this.want) { a.currentTime = 0; this.kick(); } });
       }
-      const reverb = ctx.createConvolver();
-      reverb.buffer = impulse;
-      const wet = ctx.createGain(); wet.gain.value = 0.55;
-      const dry = ctx.createGain(); dry.gain.value = 0.6;
+      if (this.track !== key) {
+        this.track = key;
+        this.audio.src = MUSIC_TRACKS[key].src;
+      }
+    }
 
-      this.input = ctx.createGain();
-      this.input.connect(lowpass);
-      lowpass.connect(dry); dry.connect(this.master);
-      lowpass.connect(reverb); reverb.connect(wet); wet.connect(this.master);
-      return true;
+    targetVolume() {
+      return this.volumeSettable ? Math.pow(this.volume, 1.5) : 1;
+    }
+
+    fadeTo(target, seconds, done) {
+      clearInterval(this.fadeTimer);
+      if (!this.audio) return done && done();
+      if (!this.volumeSettable || seconds <= 0) {
+        if (this.volumeSettable) this.audio.volume = target;
+        return done && done();
+      }
+      const start = this.audio.volume, steps = Math.max(1, Math.round(seconds * 20));
+      let i = 0;
+      this.fadeTimer = setInterval(() => {
+        i++;
+        this.audio.volume = Math.max(0, Math.min(1, start + (target - start) * (i / steps)));
+        if (i >= steps) { clearInterval(this.fadeTimer); done && done(); }
+      }, 50);
+    }
+
+    kick() {
+      if (!this.want || !this.audio || !this.audio.paused) return;
+      const p = this.audio.play();
+      if (p && p.catch) p.catch(() => { /* needs a user tap; retried on next tap */ });
+    }
+
+    start(trackKey) {
+      const switching = this.audio && this.want && this.track !== trackKey && MUSIC_TRACKS[trackKey];
+      if (switching) {
+        // Cross-fade to the other track.
+        return this.fadeTo(0, 1.2, () => {
+          this.ensure(trackKey);
+          this.audio.currentTime = 0;
+          this.kick();
+          this.fadeTo(this.targetVolume(), 2);
+          this.updateMediaSession();
+        });
+      }
+      const wasPlaying = this.want && this.audio && !this.audio.paused;
+      this.want = true;
+      this.ensure(trackKey);
+      if (!wasPlaying) {
+        if (this.volumeSettable) this.audio.volume = 0;
+        this.kick();
+        this.fadeTo(this.targetVolume(), 4);
+      }
+      clearInterval(this.watchdog);
+      this.watchdog = setInterval(() => this.kick(), 3000);
+      this.updateMediaSession();
+    }
+
+    stop(fadeSeconds = 3) {
+      this.want = false;
+      clearInterval(this.watchdog);
+      if (!this.audio) return;
+      this.fadeTo(0, fadeSeconds, () => { if (!this.want) this.audio.pause(); });
     }
 
     setVolume(v) {
       this.volume = Math.max(0, Math.min(1, v));
-      if (this.ctx && this.playing) {
-        const now = this.ctx.currentTime;
-        this.master.gain.cancelScheduledValues(now);
-        this.master.gain.setTargetAtTime(this.targetGain(), now, 0.3);
-      }
+      if (this.audio && this.want) this.fadeTo(this.targetVolume(), 0.2);
     }
 
-    targetGain() {
-      return 1.2 * this.volume * this.volume; // perceptual curve; full volume peaks well below clipping
-    }
-
-    start() {
-      if (this.playing || !this.ensureGraph()) return;
-      if (this.ctx.state === 'suspended') this.ctx.resume();
-      this.playing = true;
-      const now = this.ctx.currentTime;
-      this.master.gain.cancelScheduledValues(now);
-      this.master.gain.setValueAtTime(this.master.gain.value, now);
-      this.master.gain.linearRampToValueAtTime(this.targetGain(), now + 6);
-      this.nextChordAt = now + 0.1;
-      this.nextBellAt = now + 9;
-      this.schedule();
-      this.timer = setInterval(() => this.schedule(), 1000);
-    }
-
-    stop(fadeSeconds = 4) {
-      if (!this.playing) return;
-      this.playing = false;
-      clearInterval(this.timer);
-      const now = this.ctx.currentTime;
-      this.master.gain.cancelScheduledValues(now);
-      this.master.gain.setValueAtTime(this.master.gain.value, now);
-      this.master.gain.linearRampToValueAtTime(0, now + fadeSeconds);
-      // Silence any voices already scheduled ahead.
-      const gen = this.generation = (this.generation || 0) + 1;
-      setTimeout(() => {
-        if (this.generation === gen && !this.playing && this.ctx.state === 'running') this.ctx.suspend();
-      }, (fadeSeconds + 0.5) * 1000);
-    }
-
-    // Schedule up to ~90s ahead so throttled background timers can't cause gaps.
-    schedule() {
-      if (!this.playing) return;
-      if (this.ctx.state === 'suspended') this.ctx.resume();
-      const horizon = this.ctx.currentTime + 90;
-      while (this.nextChordAt < horizon) {
-        this.playChord(this.CHORDS[this.chordIndex], this.nextChordAt);
-        this.chordIndex = (this.chordIndex + 1) % this.CHORDS.length;
-        this.nextChordAt += this.CHORD_SECONDS;
-      }
-      while (this.nextBellAt < horizon) {
-        const step = this.bellStep++;
-        this.playBell(this.BELLS[(step * 3) % this.BELLS.length], this.nextBellAt);
-        this.nextBellAt += 11 + ((step * 7) % 9); // irregular 11–19s spacing
-      }
-    }
-
-    playChord(freqs, t) {
-      const ctx = this.ctx;
-      const dur = this.CHORD_SECONDS + this.FADE;
-      freqs.forEach((f, i) => {
-        const g = ctx.createGain();
-        const level = (i === 0 ? 0.16 : 0.1) / Math.sqrt(1 + i * 0.6);
-        g.gain.setValueAtTime(0, t);
-        g.gain.linearRampToValueAtTime(level, t + this.FADE);
-        g.gain.setValueAtTime(level, t + dur - this.FADE);
-        g.gain.linearRampToValueAtTime(0, t + dur);
-        g.connect(this.input);
-
-        // Two slightly detuned voices per note give a soft, choral shimmer.
-        [-4, 4].forEach((cents, k) => {
-          const o = ctx.createOscillator();
-          o.type = k ? 'triangle' : 'sine';
-          o.frequency.value = f;
-          o.detune.value = cents;
-          const vg = ctx.createGain();
-          vg.gain.value = k ? 0.35 : 0.65;
-          o.connect(vg); vg.connect(g);
-          o.start(t); o.stop(t + dur + 0.1);
-        });
-
-        // Very slow "breathing" swell.
-        const lfo = ctx.createOscillator();
-        const lfoGain = ctx.createGain();
-        lfo.frequency.value = 0.05 + i * 0.013;
-        lfoGain.gain.value = level * 0.3;
-        lfo.connect(lfoGain); lfoGain.connect(g.gain);
-        lfo.start(t); lfo.stop(t + dur + 0.1);
+    updateMediaSession() {
+      if (!('mediaSession' in navigator) || !window.MediaMetadata) return;
+      const t = MUSIC_TRACKS[this.track] || MUSIC_TRACKS.ambient;
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: t.title,
+        artist: t.artist,
+        album: 'The Daily Devotion',
+        artwork: [{ src: 'assets/icons/icon-512.png?v=2', sizes: '512x512', type: 'image/png' }]
       });
-    }
-
-    playBell(f, t) {
-      const ctx = this.ctx;
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = 'sine';
-      o.frequency.value = f;
-      g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(0.035, t + 0.05);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + 7);
-      o.connect(g); g.connect(this.input);
-      o.start(t); o.stop(t + 7.2);
     }
   }
 
-  const music = new AmbientMusic();
+  const music = new BackgroundMusic();
+
+  // Keep the screen awake during a devotion (also keeps music playing).
+  const screenWake = {
+    lock: null,
+    async acquire() {
+      try {
+        if (!('wakeLock' in navigator) || this.lock || document.visibilityState !== 'visible') return;
+        this.lock = await navigator.wakeLock.request('screen');
+        this.lock.addEventListener('release', () => { this.lock = null; });
+      } catch (e) { /* not supported or denied */ }
+    },
+    release() {
+      if (this.lock) this.lock.release().catch(() => {});
+      this.lock = null;
+    }
+  };
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return;
+    if (isPrayerScreen(state.currentScreen)) screenWake.acquire();
+    music.kick();
+  });
+  // Browsers may refuse to resume audio without a gesture: retry on any tap.
+  document.addEventListener('pointerdown', () => music.kick(), { passive: true });
 
   function isPrayerScreen(screenId) {
     return ['preparation', 'reading', 'concluding'].includes(screenId);
   }
 
+  function currentMusicTrack() {
+    return MUSIC_TRACKS[state.user.settings.musicTrack] ? state.user.settings.musicTrack : 'ambient';
+  }
+
   function updateMusicUI() {
-    const on = !!state.user.settings.musicOn;
+    const s = state.user.settings;
+    const on = !!s.musicOn;
     const btn = document.getElementById('btn-music-toggle');
     if (btn) {
       btn.classList.toggle('active', on);
       btn.setAttribute('aria-pressed', String(on));
-      const label = on ? 'Turn off background music' : 'Play soft background music';
+      const label = on ? 'Turn off background music' : 'Play background music';
       btn.setAttribute('title', label);
       btn.setAttribute('aria-label', label);
     }
+    updatePillButtons('#setting-music-group', 'data-music', on ? currentMusicTrack() : 'off');
     const vol = document.getElementById('setting-music-volume');
-    if (vol) vol.value = Math.round((state.user.settings.musicVolume ?? 0.6) * 100);
+    if (vol) vol.value = Math.round((s.musicVolume ?? 0.6) * 100);
+    const volRow = document.getElementById('music-volume-row');
+    const volHint = document.getElementById('music-volume-hint');
+    if (volRow) volRow.hidden = !music.volumeSettable;
+    if (volHint) volHint.hidden = music.volumeSettable;
   }
 
-  function setMusicOn(on) {
+  function setMusicOn(on, track) {
+    if (track) state.user.settings.musicTrack = track;
     state.user.settings.musicOn = on;
     savePersistedState();
     updateMusicUI();
-    applySettingsToUI();
-    if (on && isPrayerScreen(state.currentScreen)) music.start();
+    if (on && isPrayerScreen(state.currentScreen)) music.start(currentMusicTrack());
     if (!on) music.stop();
   }
+
 
   // --- ACCOUNT, LOCAL CACHE & SERVER SYNC (PocketBase + Google) ---
   // The server (PocketBase, same origin) is the source of truth for signed-in
@@ -773,8 +758,9 @@
     }
     // Fullscreen is a reading-only mode; leaving the reading restores the header.
     if (screenId !== 'reading' && document.body.classList.contains('zen-mode')) setZenMode(false);
+    if (isPrayerScreen(screenId)) screenWake.acquire(); else screenWake.release();
     if (!isPrayerScreen(screenId)) music.stop();
-    else if (state.user.settings.musicOn) music.start();
+    else if (state.user.settings.musicOn) music.start(currentMusicTrack());
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const target = document.getElementById(`screen-${screenId}`);
     if (target) {
@@ -952,7 +938,7 @@
 
     // Fade in background music if the user has it switched on.
     music.setVolume(state.user.settings.musicVolume ?? 0.6);
-    if (state.user.settings.musicOn) music.start();
+    if (state.user.settings.musicOn) music.start(currentMusicTrack());
   }
 
   function proceedToReading() {
@@ -1366,7 +1352,6 @@
     // Update settings buttons
     updatePillButtons('#setting-duration-group', 'data-minutes', String(s.durationMinutes));
     updatePillButtons('#setting-chime-group', 'data-sound', s.sound);
-    updatePillButtons('#setting-music-group', 'data-music', s.musicOn ? 'on' : 'off');
     updateMusicUI();
     updatePillButtons('#setting-theme-group', 'data-theme', s.theme);
     updatePillButtons('#setting-font-size-group', 'data-size', s.fontSize);
@@ -1594,7 +1579,10 @@
     });
 
     document.querySelectorAll('#setting-music-group .pill-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => setMusicOn(e.currentTarget.getAttribute('data-music') === 'on'));
+      btn.addEventListener('click', (e) => {
+        const v = e.currentTarget.getAttribute('data-music');
+        setMusicOn(v !== 'off', v !== 'off' ? v : undefined);
+      });
     });
     document.getElementById('btn-music-toggle')?.addEventListener('click', () => setMusicOn(!state.user.settings.musicOn));
     const volumeSlider = document.getElementById('setting-music-volume');

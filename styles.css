@@ -2169,3 +2169,18 @@ body.zen-mode #btn-zen-mode {
     white-space: nowrap;
   }
 }
+
+.music-volume-row[hidden],
+.setting-hint[hidden] {
+  display: none;
+}
+
+.setting-credit {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: var(--text-faint);
+}
+
+.setting-credit a {
+  color: inherit;
+}
