@@ -1,0 +1,12 @@
+.git
+.gitignore
+.dockerignore
+Dockerfile
+docker-compose.yml
+README.md
+CNAME
+nginx.conf
+scripts
+references
+pb_data
+**/pb_data

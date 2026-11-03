@@ -1,8 +1,18 @@
+# Local testing. Production runs on Coolify using the Dockerfile directly.
 services:
   ddcatholic:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     restart: unless-stopped
-    expose:
-      - "80"
+    ports:
+      - "8090:80"
+    environment:
+      - APP_URL=http://localhost:8090
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - PB_ADMIN_EMAIL=${PB_ADMIN_EMAIL:-admin@example.com}
+      - PB_ADMIN_PASSWORD=${PB_ADMIN_PASSWORD:-change-me-please}
+    volumes:
+      - pb_data:/pb/pb_data
+
+volumes:
+  pb_data:

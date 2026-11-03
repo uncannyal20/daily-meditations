@@ -32,19 +32,31 @@ Total: **365 daily meditation units** parsed and indexed.
   - Warm Parchment (default), Monastic Dark Cloister, and Sepia Vellum themes.
   - Serif typography (`Cinzel`, `Playfair Display`, `EB Garamond`) with drop caps and ornamental dividers.
 - **Spiritual Library & Search**: Full-text chapter browser with instant search and book filtering.
-- **Spiritual Journal**: Persistent resolution history, meditation logs, and daily streak tracking via `localStorage`.
+- **Spiritual Journal**: Resolution history, meditation logs, and daily streak tracking, saved to your account (Google sign-in) and synced across devices, with an offline copy on each device.
 
 ---
 
 ## 🚀 Getting Started
 
 ### 1. Run the Web Application
-No build step or external server framework is required. Serve the files using any static file server:
+The app is served by [PocketBase](https://pocketbase.io), which hosts the static files and provides Google sign-in and journal storage (`/api`). Run it locally with Docker:
 
 ```bash
-python3 -m http.server 8000
+docker compose up --build
 ```
-Then open `http://localhost:8000` in your web browser.
+Then open `http://localhost:8090` (admin dashboard at `/_/`). For Google sign-in locally, set `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` and add `http://localhost:8090/` as an authorized redirect URI on the OAuth client.
+
+### Deployment (Coolify)
+Built from the `Dockerfile` (port 80). Required configuration:
+
+| Setting | Value |
+|---|---|
+| Persistent storage | volume mounted at `/pb/pb_data` (database lives here) |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google Cloud OAuth "Web application" client |
+| `APP_URL` | `https://ddcatholic.uncannylabs.xyz` |
+| `PB_ADMIN_EMAIL` / `PB_ADMIN_PASSWORD` | admin account for `/_/` |
+
+The Google OAuth client must list `https://ddcatholic.uncannylabs.xyz/` as an authorized redirect URI. Database schema lives in `server/pb_migrations` and is applied automatically on startup; Google settings are applied from env vars by `server/pb_hooks/main.pb.js`.
 
 ### 2. Regenerate / Ingest EPUBs (Optional)
 To re-extract and rebuild `data/meditations.json` from the source EPUBs:
@@ -76,15 +88,20 @@ daily-meditations/
 │   │   ├── bell.mp3               # Audio chime
 │   │   └── bell.wav
 │   └── icons/
+├── server/
+│   ├── pb_migrations/             # PocketBase schema (journal_entries, users.profile)
+│   ├── pb_hooks/                  # Startup config (Google OAuth from env vars)
+│   └── entrypoint.sh              # Creates admin account, starts PocketBase
+├── Dockerfile                     # PocketBase + static app, single container
 ├── index.html                     # SPA layout and prayer views
 ├── styles.css                     # Monastic parchment design system
-├── app.js                         # Application state engine, timer, and audio
+├── app.js                         # Application state engine, timer, audio, sign-in & sync
 └── README.md
 ```
 
 ---
 
 ## 🔮 Roadmap & Future Enhancements
-- [ ] **Optional Cloud Sync**: Google OAuth via Supabase/Firebase for multi-device syncing and cloud backup while preserving guest access.
+- [x] **Cloud Sync**: Google sign-in via self-hosted PocketBase for multi-device syncing and backup.
 - [ ] **Data Export / Backup**: Single-click export/import of spiritual resolutions and session history.
 - [ ] **Audio Recitation**: Optional audio playback of preparatory and concluding prayers.

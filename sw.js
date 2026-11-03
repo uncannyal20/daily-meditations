@@ -3,12 +3,13 @@
  * Enables PWA installability and offline prayer reading
  */
 
-const CACHE_NAME = 'devotio-diurna-v1';
+const CACHE_NAME = 'devotio-diurna-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './styles.css',
   './app.js',
+  './assets/vendor/pocketbase.umd.js',
   './manifest.json',
   './data/meditations.json',
   './assets/icons/icon-192.png',
@@ -47,18 +48,29 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Navigation or asset requests: try network first, fall back to cache
+  const req = event.request;
+  const url = new URL(req.url);
+
+  // Never intercept writes, the PocketBase API/admin, or the OAuth return URL.
+  if (req.method !== 'GET') return;
+  if (url.origin === self.location.origin &&
+      (url.pathname.startsWith('/api/') || url.pathname.startsWith('/_/'))) return;
+  if (url.searchParams.has('code') || url.searchParams.has('state')) return;
+
+  // Network first, fall back to cache (and to the app shell for navigations).
   event.respondWith(
-    fetch(event.request)
+    fetch(req)
       .then((response) => {
-        if (response && response.status === 200 && event.request.method === 'GET') {
+        if (response && response.status === 200 && !url.search) {
           const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, responseClone));
         }
         return response;
       })
-      .catch(() => caches.match(event.request))
+      .catch(() =>
+        caches.match(req).then((cached) =>
+          cached || (req.mode === 'navigate' ? caches.match('./index.html') : undefined)
+        )
+      )
   );
 });

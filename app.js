@@ -136,32 +136,342 @@
 
   const chime = new ChimeAudio();
 
-  // --- LOCAL STORAGE PERSISTENCE ---
-  const STORAGE_KEY = 'daily_meditations_app_state_v1';
+  // --- ACCOUNT, LOCAL CACHE & SERVER SYNC (PocketBase + Google) ---
+  // The server (PocketBase, same origin) is the source of truth for signed-in
+  // users. localStorage is a per-user offline cache so the app opens instantly
+  // and keeps working without a connection; changes sync when back online.
+  const LEGACY_STORAGE_KEY = 'daily_meditations_app_state_v1';
+  const OAUTH_PENDING_KEY = 'ddc_oauth_pending';
+  const OAUTH_REDIRECT_URL = `${window.location.origin}/`;
+
+  const pb = window.PocketBase ? new window.PocketBase(window.location.origin) : null;
+  if (pb) pb.autoCancellation(false);
+
+  const sync = {
+    pendingDeletes: [],   // server record ids removed locally, not yet deleted remotely
+    profileDirty: false,  // local profile changes not yet pushed
+    running: false,
+    queued: false,
+    timer: null
+  };
+
+  function currentUser() {
+    return pb && pb.authStore.isValid ? pb.authStore.record : null;
+  }
+
+  function storageKey() {
+    const u = currentUser();
+    return u ? `${LEGACY_STORAGE_KEY}:${u.id}` : null;
+  }
+
+  function applySavedState(saved) {
+    if (!saved) return;
+    if (saved.settings) state.user.settings = { ...state.user.settings, ...saved.settings };
+    if (Array.isArray(saved.history)) state.user.history = saved.history;
+    if (Array.isArray(saved.bookmarks)) state.user.bookmarks = saved.bookmarks;
+    if (typeof saved.streak === 'number') state.user.streak = saved.streak;
+    if (saved.lastActiveDate !== undefined) state.user.lastActiveDate = saved.lastActiveDate;
+  }
 
   function loadPersistedState() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const key = storageKey();
+      const raw = key && localStorage.getItem(key);
       if (raw) {
         const saved = JSON.parse(raw);
-        if (saved.settings) state.user.settings = { ...state.user.settings, ...saved.settings };
-        if (Array.isArray(saved.history)) state.user.history = saved.history;
-        if (Array.isArray(saved.bookmarks)) state.user.bookmarks = saved.bookmarks;
-        if (typeof saved.streak === 'number') state.user.streak = saved.streak;
-        if (saved.lastActiveDate) state.user.lastActiveDate = saved.lastActiveDate;
+        applySavedState(saved);
+        sync.pendingDeletes = Array.isArray(saved._pendingDeletes) ? saved._pendingDeletes : [];
+        sync.profileDirty = !!saved._profileDirty;
+        return;
+      }
+      // First sign-in on this device: adopt any journal kept before accounts
+      // existed, so it gets uploaded to the user's account.
+      const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (legacy) {
+        applySavedState(JSON.parse(legacy));
+        state.user.history.forEach(e => { delete e._rid; });
+        state.importedLegacy = true;
       }
     } catch (e) {
       console.warn('Could not load saved state from localStorage:', e);
     }
   }
 
-  function savePersistedState() {
+  function writeLocalCache() {
+    const key = storageKey();
+    if (!key) return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.user));
+      localStorage.setItem(key, JSON.stringify({
+        ...state.user,
+        _pendingDeletes: sync.pendingDeletes,
+        _profileDirty: sync.profileDirty
+      }));
     } catch (e) {
       console.warn('Could not persist state to localStorage:', e);
     }
   }
+
+  function savePersistedState() {
+    sync.profileDirty = true;
+    writeLocalCache();
+    scheduleSync();
+  }
+
+  function profileSnapshot() {
+    const u = state.user;
+    return {
+      v: 1,
+      settings: u.settings,
+      bookmarks: u.bookmarks,
+      streak: u.streak,
+      lastActiveDate: u.lastActiveDate
+    };
+  }
+
+  function entryToRecord(entry, userId) {
+    return {
+      user: userId,
+      client_id: String(entry.id).slice(0, 64),
+      date: entry.date,
+      meditation_id: entry.meditationId || '',
+      book_title: (entry.bookTitle || '').slice(0, 300),
+      chapter_title: (entry.chapterTitle || '').slice(0, 300),
+      duration_minutes: Math.max(0, Math.min(1440, Math.round(entry.durationMinutes || 0))),
+      resolution: (entry.resolution || '').slice(0, 5000)
+    };
+  }
+
+  function recordToEntry(r) {
+    return {
+      id: r.client_id,
+      date: r.date,
+      meditationId: r.meditation_id,
+      bookTitle: r.book_title,
+      chapterTitle: r.chapter_title,
+      durationMinutes: r.duration_minutes,
+      resolution: r.resolution,
+      _rid: r.id
+    };
+  }
+
+  function sortHistory(list) {
+    return list.sort((a, b) => (b.date || '').localeCompare(a.date || '') || String(b.id).localeCompare(String(a.id)));
+  }
+
+  function setSyncStatus(text) {
+    const el = document.getElementById('account-sync');
+    if (el) el.textContent = text;
+  }
+
+  function scheduleSync(delay = 800) {
+    clearTimeout(sync.timer);
+    sync.timer = setTimeout(syncToServer, delay);
+  }
+
+  // Push local changes (new entries, deletions, profile) to the server.
+  async function syncToServer() {
+    const user = currentUser();
+    if (!user) return;
+    if (sync.running) { sync.queued = true; return; }
+    sync.running = true;
+    setSyncStatus('Syncing…');
+    const entries = pb.collection('journal_entries');
+    try {
+      for (const rid of [...sync.pendingDeletes]) {
+        try {
+          await entries.delete(rid);
+        } catch (e) {
+          if (e.status !== 404) throw e;
+        }
+        sync.pendingDeletes = sync.pendingDeletes.filter(x => x !== rid);
+      }
+
+      for (const entry of state.user.history.filter(e => !e._rid)) {
+        try {
+          const rec = await entries.create(entryToRecord(entry, user.id));
+          entry._rid = rec.id;
+        } catch (e) {
+          // Already uploaded (e.g. from another tab): adopt the existing record.
+          if (e.status !== 400) throw e;
+          const existing = await entries
+            .getFirstListItem(pb.filter('client_id = {:cid}', { cid: String(entry.id) }))
+            .catch(() => null);
+          if (!existing) throw e;
+          entry._rid = existing.id;
+        }
+      }
+
+      if (sync.profileDirty) {
+        sync.profileDirty = false;
+        try {
+          await pb.collection('users').update(user.id, { profile: profileSnapshot() });
+        } catch (e) {
+          sync.profileDirty = true;
+          throw e;
+        }
+      }
+
+      if (state.importedLegacy) {
+        localStorage.removeItem(LEGACY_STORAGE_KEY);
+        state.importedLegacy = false;
+      }
+      setSyncStatus('✓ Journal saved to your account');
+    } catch (e) {
+      console.warn('Sync failed, will retry:', e);
+      setSyncStatus(navigator.onLine ? '⚠ Could not sync — will retry' : 'Offline — changes saved on this device');
+      if (e.status === 401) return handleAuthExpired();
+      scheduleSync(30000);
+    } finally {
+      writeLocalCache();
+      sync.running = false;
+      if (sync.queued) { sync.queued = false; scheduleSync(0); }
+    }
+  }
+
+  // Fetch the latest profile + journal from the server and merge into local state.
+  async function pullFromServer() {
+    const user = currentUser();
+    if (!user) return false;
+    try {
+      const auth = await pb.collection('users').authRefresh();
+      const records = await pb.collection('journal_entries').getFullList({ sort: '-date,-created', batch: 500 });
+
+      // Journal: server records + any local entries not uploaded yet.
+      // Local entries that have a server id but are gone remotely were
+      // deleted on another device, so they are dropped.
+      const serverEntries = records.map(recordToEntry);
+      const serverIds = new Set(serverEntries.map(e => e.id));
+      const unsynced = state.user.history.filter(e => !e._rid && !serverIds.has(e.id));
+      state.user.history = sortHistory([...serverEntries, ...unsynced]);
+
+      // Profile: server wins unless this device has unsynced changes.
+      const remote = auth.record && auth.record.profile;
+      const hasRemote = remote && typeof remote === 'object' && remote.v;
+      if (hasRemote && state.importedLegacy) {
+        // Merge pre-account data from this device into an existing account.
+        const local = profileSnapshot();
+        applySavedState(remote);
+        state.user.bookmarks = Array.from(new Set([...(remote.bookmarks || []), ...(local.bookmarks || [])]));
+        state.user.streak = Math.max(remote.streak || 0, local.streak || 0);
+        if ((local.lastActiveDate || '') > (remote.lastActiveDate || '')) state.user.lastActiveDate = local.lastActiveDate;
+        sync.profileDirty = true;
+      } else if (hasRemote && !sync.profileDirty) {
+        applySavedState(remote);
+      } else if (!hasRemote) {
+        sync.profileDirty = true;
+      }
+
+      writeLocalCache();
+      return true;
+    } catch (e) {
+      if (e.status === 401 || e.status === 403 || e.status === 404) {
+        handleAuthExpired();
+        return false;
+      }
+      console.warn('Could not reach server; using offline copy.', e);
+      setSyncStatus('Offline — changes saved on this device');
+      return false;
+    }
+  }
+
+  function handleAuthExpired() {
+    if (pb) pb.authStore.clear();
+    document.body.classList.remove('authed');
+    showAuthGate('Your session has expired. Please sign in again.');
+  }
+
+  // --- SIGN-IN GATE ---
+  function showAuthGate(message, isError = false) {
+    const btn = document.getElementById('btn-google-signin');
+    const status = document.getElementById('auth-status');
+    if (btn) { btn.hidden = false; btn.disabled = false; }
+    if (status) {
+      status.textContent = message || '';
+      status.classList.toggle('error', !!isError);
+    }
+  }
+
+  function setAuthBusy(message) {
+    const btn = document.getElementById('btn-google-signin');
+    const status = document.getElementById('auth-status');
+    if (btn) btn.disabled = true;
+    if (status) { status.textContent = message; status.classList.remove('error'); }
+  }
+
+  async function startGoogleSignIn() {
+    if (!pb) return showAuthGate('Sign-in is unavailable (library failed to load).', true);
+    setAuthBusy('Opening Google…');
+    try {
+      const methods = await pb.collection('users').listAuthMethods();
+      const google = (methods.oauth2 && methods.oauth2.providers || []).find(p => p.name === 'google');
+      if (!google) return showAuthGate('Google sign-in is not configured on the server yet.', true);
+      localStorage.setItem(OAUTH_PENDING_KEY, JSON.stringify({
+        state: google.state,
+        codeVerifier: google.codeVerifier
+      }));
+      window.location.assign(google.authURL + encodeURIComponent(OAUTH_REDIRECT_URL));
+    } catch (e) {
+      console.error(e);
+      showAuthGate(navigator.onLine ? 'Could not reach the server. Please try again.' : 'You are offline. Connect to the internet to sign in.', true);
+    }
+  }
+
+  // Completes the Google redirect (…/?code=…&state=…) if we're returning from it.
+  async function completeOAuthRedirect() {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has('code') && !params.has('error')) return;
+
+    const pending = JSON.parse(localStorage.getItem(OAUTH_PENDING_KEY) || 'null');
+    localStorage.removeItem(OAUTH_PENDING_KEY);
+    window.history.replaceState(null, '', window.location.pathname + window.location.hash);
+
+    if (params.has('error')) {
+      showAuthGate(params.get('error') === 'access_denied' ? 'Sign-in was cancelled.' : 'Google sign-in failed. Please try again.', true);
+      return;
+    }
+    if (!pending || pending.state !== params.get('state')) {
+      showAuthGate('Sign-in could not be verified. Please try again.', true);
+      return;
+    }
+    setAuthBusy('Signing you in…');
+    try {
+      await pb.collection('users').authWithOAuth2Code(
+        'google', params.get('code'), pending.codeVerifier, OAUTH_REDIRECT_URL
+      );
+    } catch (e) {
+      console.error('OAuth exchange failed:', e);
+      showAuthGate('Google sign-in failed. Please try again.', true);
+    }
+  }
+
+  function renderAccount() {
+    const u = currentUser();
+    if (!u) return;
+    const nameEl = document.getElementById('account-name');
+    const emailEl = document.getElementById('account-email');
+    const img = document.getElementById('account-avatar');
+    const fallback = document.getElementById('account-avatar-fallback');
+    if (nameEl) nameEl.textContent = u.name || u.email || 'Signed in';
+    if (emailEl) emailEl.textContent = u.name ? u.email : '';
+    if (img && u.avatar) {
+      img.src = pb.files.getURL(u, u.avatar, { thumb: '100x100' });
+      img.hidden = false;
+      if (fallback) fallback.style.display = 'none';
+    }
+  }
+
+  function signOut() {
+    if (!window.confirm('Sign out of Daily Devotion on this device?')) return;
+    const key = storageKey();
+    if (sync.pendingDeletes.length || sync.profileDirty || state.user.history.some(e => !e._rid)) {
+      if (!window.confirm('Some changes have not synced yet and will be lost if you sign out now. Sign out anyway?')) return;
+    }
+    if (key) localStorage.removeItem(key);
+    pb.authStore.clear();
+    window.location.replace('/');
+  }
+
+  window.addEventListener('online', () => scheduleSync(0));
 
   // --- DATE & LITURGICAL CALENDAR HELPERS ---
   function getFormattedCurrentDate() {
@@ -223,9 +533,37 @@
 
   // --- DATA LOADING & INITIALIZATION ---
   async function initApp() {
+    document.getElementById('btn-google-signin')?.addEventListener('click', startGoogleSignIn);
+
+    if (!pb) {
+      showAuthGate('Sign-in is unavailable (library failed to load). Please reload.', true);
+      return;
+    }
+
+    await completeOAuthRedirect();
+    if (!currentUser()) {
+      const status = document.getElementById('auth-status');
+      if (!status || !status.classList.contains('error')) showAuthGate('');
+      return;
+    }
+
+    document.body.classList.add('authed');
+    renderAccount();
     loadPersistedState();
     updateStreakCheck();
     applySettingsToUI();
+
+    // Refresh from the server in the background, then upload anything pending.
+    pullFromServer().then((ok) => {
+      if (!currentUser()) return;
+      renderAccount();
+      updateStreakCheck();
+      applySettingsToUI();
+      updateStatsDisplay();
+      if (state.activeMeditation) updateBookmarkButton(state.activeMeditation.id);
+      if (document.getElementById('modal-journal')?.classList.contains('active')) openJournalModal();
+      if (ok || state.user.history.some(e => !e._rid)) syncToServer();
+    });
 
     // Set Date Header
     const dateStr = getFormattedCurrentDate();
@@ -750,6 +1088,7 @@
     document.getElementById('btn-open-library')?.addEventListener('click', () => openLibraryModal('all'));
     document.getElementById('btn-open-journal')?.addEventListener('click', openJournalModal);
     document.getElementById('btn-open-settings')?.addEventListener('click', openSettingsModal);
+    document.getElementById('btn-signout')?.addEventListener('click', signOut);
 
     // Theme Toggle (Quick switch between Parchment and Cloister)
     document.getElementById('btn-toggle-theme')?.addEventListener('click', () => {
@@ -956,6 +1295,7 @@
     );
     if (!confirmReset) return;
 
+    state.user.history.forEach(e => { if (e._rid) sync.pendingDeletes.push(e._rid); });
     state.user.streak = 0;
     state.user.history = [];
     state.user.lastActiveDate = null;

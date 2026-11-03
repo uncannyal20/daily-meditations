@@ -1570,3 +1570,161 @@ body.zen-mode .monastic-parchment-sheet {
     display: none;
   }
 }
+
+/* ==========================================================================
+   SIGN-IN GATE & ACCOUNT
+   ========================================================================== */
+.auth-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(ellipse at top, var(--sacred-gold-light), transparent 60%),
+    var(--bg-app);
+  overflow-y: auto;
+}
+
+body.authed .auth-gate { display: none; }
+body:not(.authed) { overflow: hidden; }
+
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  background: var(--bg-sheet);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 40px 32px 28px;
+  position: relative;
+}
+
+.auth-card::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid var(--border-subtle);
+  border-radius: calc(var(--radius-lg) - 4px);
+  pointer-events: none;
+}
+
+.auth-cross {
+  display: block;
+  font-size: 2.4rem;
+  line-height: 1;
+  color: var(--rubric-crimson);
+  margin-bottom: 12px;
+}
+
+.auth-title {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.auth-sub {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--text-muted);
+  margin: 4px 0 0;
+}
+
+.auth-divider {
+  color: var(--sacred-gold);
+  margin: 18px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-color);
+}
+
+.auth-lead {
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: var(--text-main);
+  margin: 0 0 22px;
+}
+
+.auth-google-btn {
+  width: 100%;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: #ffffff;
+  color: #1f1f1f;
+  border: 1px solid #dadce0;
+  font-family: 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-weight: 500;
+  font-size: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.auth-google-btn:hover { background: #f8f9fa; box-shadow: var(--shadow-md); }
+.auth-google-btn:disabled { opacity: 0.6; cursor: wait; }
+.auth-google-btn[hidden] { display: none; }
+
+.auth-status {
+  min-height: 1.4em;
+  margin: 14px 0 0;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+}
+
+.auth-status.error { color: var(--rubric-crimson); }
+
+.auth-foot {
+  margin: 18px 0 0;
+  font-size: 0.82rem;
+  color: var(--text-faint);
+}
+
+.account-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.account-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border-gold);
+  flex-shrink: 0;
+}
+
+.account-avatar[hidden] { display: none; }
+
+.account-avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--rubric-crimson-bg);
+  color: var(--rubric-crimson);
+  font-size: 1.2rem;
+}
+
+.account-info { flex: 1; min-width: 0; }
+.account-name { font-weight: 600; color: var(--text-main); }
+.account-email,
+.account-sync {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
