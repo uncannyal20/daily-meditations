@@ -25,7 +25,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Playfair+Display:ital,wght@0,500;0,600;1,400;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=16">
+  <link rel="stylesheet" href="styles.css?v=17">
 </head>
 <body>
 
@@ -505,22 +505,19 @@
       </div>
     </section>
 
-  </main>
-
-  <!-- ============================================== -->
-  <!-- MODAL 1: CHAPTER BROWSER / SPIRITUAL LIBRARY   -->
-  <!-- ============================================== -->
-  <div class="modal-overlay" id="modal-library">
-    <div class="modal-container library-modal">
-      <header class="modal-header">
-        <div class="modal-title-group">
-          <span class="modal-icon">📖</span>
-          <h3 class="modal-title">Spiritual Library & Index</h3>
+    <!-- ============================================== -->
+    <!-- PAGE: SPIRITUAL LIBRARY & INDEX              -->
+    <!-- ============================================== -->
+    <section class="screen page-screen" id="screen-library">
+      <div class="content-wrapper page-view">
+        <div class="page-header">
+          <button class="btn btn-outline btn-small page-back-btn" type="button" data-page-back>← Back</button>
+          <div class="page-heading">
+            <h2 class="page-title"><span class="page-icon" aria-hidden="true">📖</span> Spiritual Library &amp; Index</h2>
+            <p class="page-subtitle">Browse every meditation by book, search by topic, or open your bookmarks.</p>
+          </div>
         </div>
-        <button class="modal-close-btn" id="btn-close-library" aria-label="Close">✕</button>
-      </header>
 
-      <div class="modal-body">
         <!-- Search & Filter Controls -->
         <div class="library-controls">
           <div class="search-box">
@@ -541,23 +538,21 @@
           <!-- Injected via JS -->
         </div>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <!-- ============================================== -->
-  <!-- MODAL 2: SPIRITUAL JOURNAL & RESOLUTIONS       -->
-  <!-- ============================================== -->
-  <div class="modal-overlay" id="modal-journal">
-    <div class="modal-container journal-modal">
-      <header class="modal-header">
-        <div class="modal-title-group">
-          <span class="modal-icon">✒</span>
-          <h3 class="modal-title">Spiritual Journal & Resolutions</h3>
+    <!-- ============================================== -->
+    <!-- PAGE: SPIRITUAL JOURNAL & RESOLUTIONS        -->
+    <!-- ============================================== -->
+    <section class="screen page-screen" id="screen-journal">
+      <div class="content-wrapper page-view">
+        <div class="page-header">
+          <button class="btn btn-outline btn-small page-back-btn" type="button" data-page-back>← Back</button>
+          <div class="page-heading">
+            <h2 class="page-title"><span class="page-icon" aria-hidden="true">✒</span> Spiritual Journal &amp; Resolutions</h2>
+            <p class="page-subtitle">Your completed devotions, reflections and resolutions.</p>
+          </div>
         </div>
-        <button class="modal-close-btn" id="btn-close-journal" aria-label="Close">✕</button>
-      </header>
 
-      <div class="modal-body">
         <div class="journal-stats">
           <div class="journal-stat-item">
             <span class="stat-num" id="journal-total-entries">0</span>
@@ -583,8 +578,9 @@
           <!-- Injected via JS -->
         </div>
       </div>
-    </div>
-  </div>
+    </section>
+
+  </main>
 
   <!-- ============================================== -->
   <!-- MODAL 3: PRAYER SETTINGS                       -->
@@ -694,6 +690,6 @@
   </div>
 
   <script src="assets/vendor/pocketbase.umd.js"></script>
-  <script src="app.js?v=16"></script>
+  <script src="app.js?v=17"></script>
 </body>
 </html>

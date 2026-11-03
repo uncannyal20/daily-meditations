@@ -13,6 +13,7 @@
     books: [],
     activeMeditation: null,
     readingTrail: [],
+    returnScreen: 'welcome',
     currentScreen: 'welcome',
     timer: {
       totalSeconds: 15 * 60,
@@ -728,10 +729,52 @@
     }
   }
 
+  // --- FULL PAGES (Library, Journal) with browser/phone back support ---
+  const PAGE_SCREENS = ['library', 'journal'];
+  function isPageScreen(screenId) {
+    return PAGE_SCREENS.includes(screenId);
+  }
+
+  function openPage(name) {
+    const fromPage = isPageScreen(state.currentScreen);
+    if (!fromPage) state.returnScreen = state.currentScreen || 'welcome';
+    const url = `${window.location.pathname}#${name}`;
+    // One history entry per visit to the pages, so the back gesture returns
+    // to where the user came from (switching Library <-> Journal replaces it).
+    if (fromPage || window.location.hash === `#${name}`) history.replaceState({ page: name }, '', url);
+    else history.pushState({ page: name }, '', url);
+    showScreen(name);
+  }
+
+  // Leave a page without navigating anywhere in particular (e.g. a chapter
+  // was chosen): drop the #hash so a later back gesture doesn't land here.
+  function leavePage() {
+    if (window.location.hash) history.replaceState(null, '', window.location.pathname);
+  }
+
+  function closePage() {
+    if (history.state && history.state.page) history.back(); // handled by popstate
+    else showScreen(state.returnScreen || 'welcome');
+  }
+
+  window.addEventListener('popstate', (e) => {
+    const page = e.state && e.state.page;
+    if (page && isPageScreen(page)) {
+      if (page === 'library') { showScreen('library'); }
+      else { showScreen('journal'); renderJournal(); }
+    } else if (isPageScreen(state.currentScreen)) {
+      showScreen(state.returnScreen || 'welcome');
+    }
+  });
+
   function showScreen(screenId) {
+    if (!isPageScreen(screenId) && isPageScreen(state.currentScreen) && window.location.hash) {
+      history.replaceState(null, '', window.location.pathname);
+    }
     // Fullscreen is a reading-only mode; leaving the reading restores the header.
     if (screenId !== 'reading' && document.body.classList.contains('zen-mode')) setZenMode(false);
     if (!isPrayerScreen(screenId)) music.stop();
+    else if (state.user.settings.musicOn) music.start();
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const target = document.getElementById(`screen-${screenId}`);
     if (target) {
@@ -788,7 +831,7 @@
       applySettingsToUI();
       updateStatsDisplay();
       if (state.activeMeditation) updateBookmarkButton(state.activeMeditation.id);
-      if (document.getElementById('modal-journal')?.classList.contains('active')) openJournalModal();
+      if (state.currentScreen === 'journal') renderJournal();
       if (ok || state.user.history.some(e => !e._rid)) syncToServer();
     });
 
@@ -811,6 +854,10 @@
       setupWelcomeHero();
       updateStatsDisplay();
       setupEventListeners();
+
+      // Deep links / reload on a page: #library or #journal
+      if (window.location.hash === '#library') openLibrary('all');
+      else if (window.location.hash === '#journal') openJournal();
     } catch (err) {
       console.error('Failed to load meditations dataset:', err);
     }
@@ -1178,18 +1225,16 @@
   }
 
   // --- LIBRARY BROWSER MODAL ---
-  function openLibraryModal(filterBook = 'all') {
-    const modal = document.getElementById('modal-library');
-    if (!modal) return;
-
-    modal.classList.add('active');
+  function openLibrary(filterBook = 'all') {
+    openPage('library');
     renderLibraryTabs(filterBook);
     filterAndRenderChapters(filterBook, '');
 
     const searchInput = document.getElementById('library-search-input');
     if (searchInput) {
       searchInput.value = '';
-      searchInput.focus();
+      // Don't pop the on-screen keyboard on phones.
+      if (window.matchMedia('(min-width: 769px)').matches) searchInput.focus({ preventScroll: true });
     }
   }
 
@@ -1247,7 +1292,7 @@
       `;
 
       itemEl.addEventListener('click', () => {
-        closeAllModals();
+        leavePage();
         selectMeditation(m);
       });
 
@@ -1256,12 +1301,12 @@
   }
 
   // --- SPIRITUAL JOURNAL MODAL ---
-  function openJournalModal() {
-    const modal = document.getElementById('modal-journal');
-    if (!modal) return;
+  function openJournal() {
+    openPage('journal');
+    renderJournal();
+  }
 
-    modal.classList.add('active');
-
+  function renderJournal() {
     const totalMinutes = state.user.history.reduce((acc, curr) => acc + (curr.durationMinutes || 0), 0);
 
     const totalEntriesEl = document.getElementById('journal-total-entries');
@@ -1372,8 +1417,9 @@
     document.getElementById('btn-home')?.addEventListener('click', () => showScreen('welcome'));
 
     // Top Navigation Action Buttons
-    document.getElementById('btn-open-library')?.addEventListener('click', () => openLibraryModal('all'));
-    document.getElementById('btn-open-journal')?.addEventListener('click', openJournalModal);
+    document.getElementById('btn-open-library')?.addEventListener('click', () => openLibrary('all'));
+    document.getElementById('btn-open-journal')?.addEventListener('click', openJournal);
+    document.querySelectorAll('[data-page-back]').forEach(btn => btn.addEventListener('click', closePage));
     document.getElementById('btn-open-settings')?.addEventListener('click', openSettingsModal);
     document.getElementById('btn-signout')?.addEventListener('click', signOut);
     document.getElementById('btn-hud-collapse')?.addEventListener('click', () => {
@@ -1417,7 +1463,7 @@
     document.querySelectorAll('.btn-select-book').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const bookId = e.currentTarget.getAttribute('data-book-id');
-        openLibraryModal(bookId);
+        openLibrary(bookId);
       });
     });
 
@@ -1511,7 +1557,7 @@
     document.getElementById('btn-return-home')?.addEventListener('click', () => showScreen('welcome'));
     document.getElementById('btn-view-journal-entry')?.addEventListener('click', () => {
       showScreen('welcome');
-      openJournalModal();
+      openJournal();
     });
 
     // Library Modal Search & Tabs
@@ -1587,8 +1633,10 @@
       if (e.key === 'Escape') {
         if (document.body.classList.contains('zen-mode')) {
           setZenMode(false);
-        } else {
+        } else if (document.querySelector('.modal-overlay.active')) {
           closeAllModals();
+        } else if (isPageScreen(state.currentScreen)) {
+          closePage();
         }
       }
     });
@@ -1608,8 +1656,8 @@
     savePersistedState();
     updateStatsDisplay();
 
-    if (document.getElementById('modal-journal')?.classList.contains('active')) {
-      openJournalModal();
+    if (state.currentScreen === 'journal') {
+      renderJournal();
     }
 
     const toast = document.createElement('div');

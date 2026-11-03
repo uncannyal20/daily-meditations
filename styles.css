@@ -2074,3 +2074,98 @@ body.zen-mode #btn-zen-mode {
     flex-direction: column;
   }
 }
+
+/* ==========================================================================
+   FULL PAGES: Library & Journal
+   ========================================================================== */
+.page-view {
+  padding-bottom: 40px;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.page-back-btn {
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.page-heading {
+  min-width: 0;
+}
+
+.page-title {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--rubric-crimson);
+  margin: 0;
+  line-height: 1.25;
+}
+
+.page-icon {
+  font-size: 1.2rem;
+}
+
+.page-subtitle {
+  margin: 4px 0 0;
+  font-style: italic;
+  color: var(--text-muted);
+  font-size: 0.98rem;
+}
+
+/* Search + book tabs stay pinned under the header while the list scrolls */
+#screen-library .library-controls {
+  position: sticky;
+  top: var(--header-h, 58px);
+  z-index: 20;
+  background-color: var(--bg-app);
+  padding: 10px 0 12px;
+  margin: 0 0 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+#screen-library .search-box {
+  margin-bottom: 10px;
+}
+
+/* The full list scrolls with the page instead of a half-height box */
+#screen-library .chapters-container {
+  max-height: none;
+  overflow: visible;
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .page-back-btn {
+    margin-top: 0;
+  }
+  .page-title {
+    font-size: 1.2rem;
+  }
+  /* One swipeable row of book tabs on phones */
+  #screen-library .book-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  #screen-library .book-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  #screen-library .tab-btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+}
