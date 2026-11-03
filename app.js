@@ -1214,13 +1214,10 @@
     });
 
     // Reading Navigation Buttons
-    document.getElementById('btn-prev-chapter')?.addEventListener('click', () => {
-      if (!state.activeMeditation) return;
-      const currIdx = state.meditations.findIndex(m => m.id === state.activeMeditation.id);
-      if (currIdx > 0) {
-        state.activeMeditation = state.meditations[currIdx - 1];
-        renderReadingScreen(state.activeMeditation);
-      }
+    // Back to Step 1 (Preparation); the prayer timer keeps running.
+    document.getElementById('btn-back-to-preparation')?.addEventListener('click', () => {
+      updateHudBadges(state.activeMeditation, 'Phase 1: Preparation');
+      showScreen('preparation');
     });
 
     document.getElementById('btn-next-chapter')?.addEventListener('click', () => {
@@ -1229,6 +1226,8 @@
       if (currIdx >= 0 && currIdx < state.meditations.length - 1) {
         state.activeMeditation = state.meditations[currIdx + 1];
         renderReadingScreen(state.activeMeditation);
+        updateHudBadges(state.activeMeditation, 'Phase 2: Meditation');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     });
 

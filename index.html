@@ -25,7 +25,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Playfair+Display:ital,wght@0,500;0,600;1,400;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=7">
 </head>
 <body>
 
@@ -312,9 +312,9 @@
 
         <!-- Progress Steps -->
         <div class="prayer-step-header">
-          <div class="step-pill completed">✓ Preparation</div>
+          <div class="step-pill completed"><span class="step-num">✓</span> Preparation</div>
           <div class="step-line"></div>
-          <div class="step-pill active"><span class="step-num">2</span> Meditation & Contemplation</div>
+          <div class="step-pill active"><span class="step-num">2</span> Meditation</div>
           <div class="step-line"></div>
           <div class="step-pill"><span class="step-num">3</span> Thanksgiving</div>
         </div>
@@ -347,11 +347,11 @@
             </div>
 
             <div class="reading-actions">
-              <button class="btn btn-outline" id="btn-prev-chapter" title="Previous Meditation">← Previous</button>
+              <button class="btn btn-outline" id="btn-back-to-preparation" title="Back to Step 1: Preparation">← Preparation</button>
               <button class="btn btn-primary btn-large" id="btn-proceed-concluding">
                 Proceed to Thanksgiving & Resolution ✠
               </button>
-              <button class="btn btn-outline" id="btn-next-chapter" title="Next Meditation">Next →</button>
+              <button class="btn btn-outline" id="btn-next-chapter" title="Go to the next meditation">Next Meditation →</button>
             </div>
 
           </div>
@@ -368,11 +368,11 @@
 
         <!-- Progress Steps -->
         <div class="prayer-step-header">
-          <div class="step-pill completed">✓ Preparation</div>
+          <div class="step-pill completed"><span class="step-num">✓</span> Preparation</div>
           <div class="step-line"></div>
-          <div class="step-pill completed">✓ Meditation</div>
+          <div class="step-pill completed"><span class="step-num">✓</span> Meditation</div>
           <div class="step-line"></div>
-          <div class="step-pill active"><span class="step-num">3</span> Thanksgiving & Resolution</div>
+          <div class="step-pill active"><span class="step-num">3</span> Thanksgiving</div>
         </div>
 
         <div class="monastic-card prayer-card">
@@ -662,6 +662,6 @@
   </div>
 
   <script src="assets/vendor/pocketbase.umd.js"></script>
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>

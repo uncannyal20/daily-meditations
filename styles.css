@@ -581,12 +581,18 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-bottom: 24px;
+  max-width: 600px;
+  margin: 0 auto 24px;
 }
 
 .step-pill {
   display: flex;
   align-items: center;
+  justify-content: center;
+  flex: 1 1 0;         /* equal widths regardless of label length */
+  min-width: 0;
+  max-width: 170px;
+  white-space: nowrap;
   gap: 6px;
   padding: 6px 14px;
   border-radius: 20px;
@@ -614,6 +620,7 @@ body {
 }
 
 .step-line {
+  flex: 0 0 20px;
   width: 20px;
   height: 1px;
   background-color: var(--border-color);
@@ -1669,12 +1676,9 @@ body.zen-mode .monastic-parchment-sheet {
     gap: 4px;
   }
   .step-pill {
-    padding: 4px 8px;
-    font-size: 0.74rem;
+    padding: 5px 6px;
+    font-size: 0.76rem;
     gap: 4px;
-    min-width: 0;
-    text-align: center;
-    line-height: 1.2;
   }
   .step-line {
     flex: 0 1 12px;
@@ -1683,6 +1687,14 @@ body.zen-mode .monastic-parchment-sheet {
 }
 
 @media (max-width: 350px) {
+  .step-pill {
+    font-size: 0.7rem;
+    padding: 4px 4px;
+    gap: 3px;
+  }
+  .step-line {
+    flex-basis: 6px;
+  }
   /* Very small phones only: theme is still available in Settings */
   .theme-toggle-btn {
     display: none;
