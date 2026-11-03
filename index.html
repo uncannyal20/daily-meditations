@@ -25,7 +25,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Playfair+Display:ital,wght@0,500;0,600;1,400;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=7">
+  <link rel="stylesheet" href="styles.css?v=8">
 </head>
 <body>
 
@@ -382,17 +382,18 @@
           <div class="prayer-heading">
             <div class="fleuron">❧ ✠ ☙</div>
             <h2 class="prayer-title">Concluding Prayers & Resolution</h2>
-            <div class="prayer-caption">Offer thanksgiving for God's inspirations and formulate a practical resolution.</div>
+            <div class="prayer-caption">Reflect on what moved you, form a practical resolution, and offer thanksgiving for God's inspirations.</div>
           </div>
 
           <div class="prayer-body">
 
-            <!-- Act of Thanksgiving -->
-            <div class="prayer-section">
-              <h4 class="prayer-subheading">I. Act of Thanksgiving</h4>
-              <p class="prayer-text">
-                <span class="drop-cap">I</span> thank you, my God, for the good resolutions, affections and inspirations that you have communicated to me in this meditation. I beg your help in putting them into effect. My Immaculate Mother, Saint Joseph my father and lord, my guardian angel, intercede for me. <strong>Amen.</strong>
+            <!-- Reflection on the Reading -->
+            <div class="prayer-section resolution-box">
+              <h4 class="prayer-subheading">I. Reflection</h4>
+              <p class="resolution-helper">
+                What in the text you just read struck you the most? Note a word, phrase or thought that moved you, and why.
               </p>
+              <textarea class="resolution-input" id="reflection-textarea" maxlength="5000" placeholder="What struck me most was…" rows="3"></textarea>
             </div>
 
             <!-- Practical Daily Resolution -->
@@ -401,12 +402,20 @@
               <p class="resolution-helper">
                 St. Francis de Sales advises making one concrete, practical resolution to practice today (e.g. overcoming a specific irritation, showing extra patience, praying at noon):
               </p>
-              <textarea class="resolution-input" id="resolution-textarea" placeholder="Write your practical resolution for today (e.g. 'I will practice patient silence when provoked today...')" rows="3"></textarea>
+              <textarea class="resolution-input" id="resolution-textarea" maxlength="5000" placeholder="Write your practical resolution for today (e.g. 'I will practice patient silence when provoked today...')" rows="3"></textarea>
             </div>
 
-            <!-- Oblation & Anima Christi -->
+            <!-- Act of Thanksgiving -->
             <div class="prayer-section">
-              <h4 class="prayer-subheading">III. Suscipe (Offering of Self)</h4>
+              <h4 class="prayer-subheading">III. Act of Thanksgiving</h4>
+              <p class="prayer-text">
+                <span class="drop-cap">I</span> thank you, my God, for the good resolutions, affections and inspirations that you have communicated to me in this meditation. I beg your help in putting them into effect. My Immaculate Mother, Saint Joseph my father and lord, my guardian angel, intercede for me. <strong>Amen.</strong>
+              </p>
+            </div>
+
+            <!-- Suscipe -->
+            <div class="prayer-section">
+              <h4 class="prayer-subheading">IV. Suscipe (Offering of Self)</h4>
               <p class="prayer-text">
                 Take, Lord, and receive all my liberty, my memory, my understanding, and my entire will. All that I have and call my own You have given to me; to You, Lord, I return it. Everything is Yours; do with it what You will. Give me only Your love and Your grace, for that is enough for me.
               </p>
@@ -467,6 +476,10 @@
             <div class="summary-row">
               <span class="summary-label">Time Spent in Prayer:</span>
               <span class="summary-value" id="complete-time-spent">15 minutes</span>
+            </div>
+            <div class="summary-row" id="complete-reflection-row" style="display:none;">
+              <span class="summary-label">What Struck You:</span>
+              <span class="summary-value italic" id="complete-reflection-text"></span>
             </div>
             <div class="summary-row" id="complete-resolution-row" style="display:none;">
               <span class="summary-label">Today's Resolution:</span>
@@ -662,6 +675,6 @@
   </div>
 
   <script src="assets/vendor/pocketbase.umd.js"></script>
-  <script src="app.js?v=7"></script>
+  <script src="app.js?v=8"></script>
 </body>
 </html>

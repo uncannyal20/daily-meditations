@@ -237,7 +237,8 @@
       book_title: (entry.bookTitle || '').slice(0, 300),
       chapter_title: (entry.chapterTitle || '').slice(0, 300),
       duration_minutes: Math.max(0, Math.min(1440, Math.round(entry.durationMinutes || 0))),
-      resolution: (entry.resolution || '').slice(0, 5000)
+      resolution: (entry.resolution || '').slice(0, 5000),
+      reflection: (entry.reflection || '').slice(0, 5000)
     };
   }
 
@@ -250,6 +251,7 @@
       chapterTitle: r.chapter_title,
       durationMinutes: r.duration_minutes,
       resolution: r.resolution,
+      reflection: r.reflection || '',
       _rid: r.id
     };
   }
@@ -472,6 +474,10 @@
   }
 
   window.addEventListener('online', () => scheduleSync(0));
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
 
   // --- DATE & LITURGICAL CALENDAR HELPERS ---
   function getFormattedCurrentDate() {
@@ -872,6 +878,8 @@
 
     const resInput = document.getElementById('resolution-textarea');
     const resolutionText = resInput ? resInput.value.trim() : '';
+    const refInput = document.getElementById('reflection-textarea');
+    const reflectionText = refInput ? refInput.value.trim() : '';
 
     const todayStr = new Date().toISOString().split('T')[0];
     const prayerMinutes = Math.max(1, Math.round(state.timer.elapsedSeconds / 60) || state.user.settings.durationMinutes);
@@ -890,7 +898,8 @@
       bookTitle: m.bookTitle,
       chapterTitle: m.title,
       durationMinutes: prayerMinutes,
-      resolution: resolutionText
+      resolution: resolutionText,
+      reflection: reflectionText
     };
 
     state.user.history.unshift(entry);
@@ -914,7 +923,13 @@
       if (compResRow) compResRow.style.display = 'none';
     }
 
+    const compRefRow = document.getElementById('complete-reflection-row');
+    const compRefText = document.getElementById('complete-reflection-text');
+    if (compRefRow) compRefRow.style.display = reflectionText ? 'flex' : 'none';
+    if (compRefText) compRefText.textContent = reflectionText ? `"${reflectionText}"` : '';
+
     if (resInput) resInput.value = '';
+    if (refInput) refInput.value = '';
 
     updateStatsDisplay();
     showScreen('complete');
@@ -1028,9 +1043,10 @@
       const card = document.createElement('div');
       card.className = 'journal-entry-card';
       card.innerHTML = `
-        <div class="journal-entry-date">${entry.date} · ${entry.durationMinutes} min prayer</div>
-        <div class="journal-entry-reading">${entry.bookTitle} — ${entry.chapterTitle}</div>
-        ${entry.resolution ? `<div class="journal-entry-resolution"><strong>Resolution:</strong> "${entry.resolution}"</div>` : ''}
+        <div class="journal-entry-date">${escapeHtml(entry.date)} · ${escapeHtml(entry.durationMinutes)} min prayer</div>
+        <div class="journal-entry-reading">${escapeHtml(entry.bookTitle)} — ${escapeHtml(entry.chapterTitle)}</div>
+        ${entry.reflection ? `<div class="journal-entry-reflection"><strong>What struck me:</strong> "${escapeHtml(entry.reflection)}"</div>` : ''}
+        ${entry.resolution ? `<div class="journal-entry-resolution"><strong>Resolution:</strong> "${escapeHtml(entry.resolution)}"</div>` : ''}
       `;
       listEl.appendChild(card);
     });

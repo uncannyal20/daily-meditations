@@ -1494,6 +1494,17 @@ body.zen-mode .monastic-parchment-sheet {
   margin: 4px 0 8px;
 }
 
+.journal-entry-reflection {
+  font-style: italic;
+  font-size: 0.98rem;
+  color: var(--text-main);
+  background-color: var(--bg-sheet);
+  padding: 10px 14px;
+  border-left: 3px solid var(--sacred-gold);
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
 .journal-entry-resolution {
   font-style: italic;
   font-size: 0.98rem;
@@ -1948,4 +1959,9 @@ body:not(.authed) { overflow: hidden; }
 .mobile-date-bar:empty,
 body.zen-mode .mobile-date-bar {
   display: none !important;
+}
+
+/* Space between the stacked reflection and resolution boxes */
+.resolution-box + .resolution-box {
+  margin-top: 16px;
 }
