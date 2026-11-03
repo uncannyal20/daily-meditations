@@ -1102,7 +1102,7 @@
     const btn = document.getElementById('btn-hud-collapse');
     if (hud) hud.classList.toggle('collapsed', collapsed);
     if (btn) {
-      const label = collapsed ? 'Show reading tools' : 'Hide reading tools';
+      const label = collapsed ? 'Show timer & reading tools' : 'Hide timer & reading tools';
       btn.setAttribute('aria-expanded', String(!collapsed));
       btn.setAttribute('title', label);
       btn.setAttribute('aria-label', label);

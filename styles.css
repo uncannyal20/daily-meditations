@@ -1745,33 +1745,31 @@ body.zen-mode .monastic-parchment-sheet {
 }
 
 .meditation-hud.collapsed {
-  padding-top: 3px;
-  padding-bottom: 3px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  background: transparent;
+  border-bottom-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  pointer-events: none; /* let taps reach the text beneath; only the button is clickable */
 }
 
 .meditation-hud.collapsed .hud-left,
 .meditation-hud.collapsed .hud-right,
-.meditation-hud.collapsed .timer-btn-subtle {
+.meditation-hud.collapsed .hud-timer-widget {
   display: none !important;
 }
 
 .meditation-hud.collapsed .hud-container {
-  flex-wrap: nowrap;
-  justify-content: center;
-}
-
-.meditation-hud.collapsed .hud-timer-widget {
-  padding: 2px 12px;
-  box-shadow: none;
-}
-
-.meditation-hud.collapsed .timer-countdown {
-  font-size: 1.05rem;
+  justify-content: flex-end;
 }
 
 .meditation-hud.collapsed .hud-collapse-btn {
-  width: 26px;
-  height: 26px;
+  pointer-events: auto;
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-gold);
+  color: var(--text-main);
 }
 
 .meditation-hud.collapsed .hud-collapse-btn svg {
